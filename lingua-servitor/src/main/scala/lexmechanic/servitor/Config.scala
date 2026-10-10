@@ -4,6 +4,7 @@ import io.circe.derivation.ConfiguredCodec
 import io.circe.parser.decode
 import io.circe.syntax.*
 import lexmechanic.noosphere.{*, given}
+import lexmechanic.servitor.desktop.Pictcaptor
 import lexmechanic.servitor.translation.{Gender, Heretek, Mandate}
 
 import java.nio.file.{Files, Path, Paths}
@@ -20,7 +21,7 @@ final case class Config(
     captain: Gender = Gender.Male,
     instructions: Option[String] = None,
     port: Int = 7040,
-    captureCommand: List[String] = Config.defaultCaptureCommand,
+    captureCommand: Option[List[String]] = None,
     openCommand: List[String] = Config.defaultOpenCommand,
     region: Option[Region] = None,
     hotkey: Option[Int] = Some(EvdevKeys.BtnExtra)
@@ -30,13 +31,11 @@ final case class Config(
 
   def activeInstructions: String = instructions.getOrElse(Instructions.default)
 
+  def activeCaptureCommand: List[String] = captureCommand.getOrElse(Pictcaptor.defaultCommand)
+
   def mandate: Mandate = Mandate(game, targetLanguage, captain, activeInstructions)
 
 object Config:
-  private val defaultCaptureCommand =
-    if LinktimeInfo.isMac then List("screencapture", "-x", "-t", "png", "{file}")
-    else List("spectacle", "--background", "--nonotify", "--fullscreen", "--output", "{file}")
-
   private val defaultOpenCommand = List(if LinktimeInfo.isMac then "open" else "xdg-open", "{url}")
 
   private def xdgDir(variable: String, fallback: String): Path =

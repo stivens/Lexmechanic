@@ -35,6 +35,8 @@ object Polish extends Messages:
       "Skrót niedostępny: nie znaleziono urządzeń wejściowych (evdev działa tylko na Linuksie) – użyj przycisku Tłumacz lub `lexmechanic trigger`."
     case HotkeyProblem.NoPermission =>
       "Skrót niedostępny: brak dostępu do urządzeń z przyciskami – uruchom `sudo usermod -aG input $USER` i zaloguj się ponownie."
+    case HotkeyProblem.NoInputMonitoring =>
+      "Skrót niedostępny: zezwól Lexmechanikowi (lub terminalowi, w którym działa) na Monitorowanie wprowadzania w Ustawieniach systemowych > Prywatność i ochrona, a potem uruchom go ponownie."
 
   val noRegion =
     "Nie skalibrowano jeszcze obszaru – wysyłany jest cały ekran. Użyj przycisku Kalibruj, aby zaznaczyć okno dialogowe."

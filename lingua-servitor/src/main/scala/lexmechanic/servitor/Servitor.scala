@@ -77,7 +77,7 @@ final class Servitor(xenolinguist: Xenolinguist, initial: Config):
 
   private def translateScreen(): Unit =
     val current = synchronized(config)
-    val screenshot = Pictcaptor.fullScreen(current.captureCommand, translationShot)
+    val screenshot = Pictcaptor.fullScreen(current.activeCaptureCommand, translationShot)
     val mandate = current.mandate
     val dialogue = xenolinguist.translate(Png.read(screenshot, current.region), mandate)
     synchronized {
@@ -117,7 +117,7 @@ final class Servitor(xenolinguist: Xenolinguist, initial: Config):
     case ("POST", "/capture")   => currentState(if trigger() then 200 else 409)
     case ("POST", "/calibrate") =>
       act {
-        Pictcaptor.fullScreen(synchronized(config).captureCommand, calibrationShot)
+        Pictcaptor.fullScreen(synchronized(config).activeCaptureCommand, calibrationShot)
         None
       }
     case ("POST", "/region") =>

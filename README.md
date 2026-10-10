@@ -44,7 +44,7 @@ Lexmechanics are known for processing information with computer-like speed and a
 
 ## Usage
 
-Lexmechanic is a small daemon. When you press a mouse side button, it takes a screenshot, crops it to the dialogue window, has an AI model translate the dialogue into your language, and shows the result in a local web page, which it opens on start. Keep that page on the Steam Deck's built-in screen.
+Lexmechanic is a small daemon for Linux and macOS. When you press a mouse side button, it takes a screenshot, crops it to the dialogue window, has an AI model translate the dialogue into your language, and shows the result in a local web page, which it opens on start. Keep that page on the Steam Deck's built-in screen.
 
 ```sh
 export GEMINI_API_KEY=...       # free key from https://aistudio.google.com/apikey
@@ -89,10 +89,10 @@ Settings are in `~/.config/lexmechanic/config.json`, which is created on first r
 | `captain` | `male` | gender of your player character, for languages with grammatical gender |
 | `instructions` | built in | game-specific guidance for the Abominable Intelligence, set from the UI; **Restore default** removes it |
 | `port` | `7040` | |
-| `captureCommand` | `spectacle` (Linux) / `screencapture` (macOS) | command as a JSON array of arguments, e.g. `["spectacle", "-b", "-n", "-f", "-o", "{file}"]`; `{file}` becomes the PNG output path |
+| `captureCommand` | `screencapture` (macOS); on Linux the first installed of `spectacle` (KDE), `gnome-screenshot` (GNOME), `grim` (Sway, Hyprland and other wlroots compositors), `scrot` or ImageMagick's `import` (X11) | command as a JSON array of arguments, e.g. `["spectacle", "-b", "-n", "-f", "-o", "{file}"]`; `{file}` becomes the PNG output path |
 | `openCommand` | `xdg-open` (Linux) / `open` (macOS) | opens the UI once the daemon starts; `{url}` becomes its address, `[]` turns it off |
 | `region` | none | set by Calibrate |
-| `hotkey` | `276` | evdev key code, set from the UI; `275` = mouse 4 ("back"), `276` = mouse 5 ("forward") |
+| `hotkey` | `276` | Linux evdev key code, also on macOS, set from the UI; `275` = mouse 4 ("back"), `276` = mouse 5 ("forward") |
 
 Providers:
 
@@ -114,6 +114,16 @@ Providers:
 - **Display:** to open the UI full-screen, set `openCommand` to
   `["flatpak", "run", "org.mozilla.firefox", "--kiosk", "{url}"]`, then pin the window to the built-in screen with a
   KDE window rule.
+
+### macOS setup
+
+- **Build:** install the Xcode command line tools (`xcode-select --install`, for `clang`), then `brew install sbt libidn2`.
+- **Hotkey:** the daemon listens through a Quartz event tap, which needs the Input Monitoring permission. On the first
+  start macOS asks for it; allow it in System Settings > Privacy & Security > Input Monitoring, then restart. The
+  permission goes to the app that launched Lexmechanic, which is your terminal when you start it from one.
+- **Capture:** `screencapture` needs the Screen Recording permission, granted the same way. Without it, screenshots fail or
+  miss the game window. It captures the main display; to use another one, set `captureCommand` to
+  `["screencapture", "-x", "-t", "png", "-D", "2", "{file}"]`.
 
 ---
 

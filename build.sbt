@@ -24,6 +24,9 @@ lazy val dataSlate = project
     )
   )
 
+val macFrameworks =
+  if scala.util.Properties.isMac then Seq("-framework", "CoreGraphics", "-framework", "CoreFoundation") else Nil
+
 lazy val linguaServitor = project
   .in(file("lingua-servitor"))
   .enablePlugins(ScalaNativePlugin)
@@ -49,6 +52,8 @@ lazy val linguaServitor = project
         .withMultithreading(true)
         .withEmbedResources(true)
         .withResourceIncludePatterns(Seq("web/**"))
+        // Scala Native's @link only takes plain libraries; the macOS hotkey needs these frameworks.
+        .withLinkingOptions(_ ++ macFrameworks)
     }
   )
 
