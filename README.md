@@ -1,5 +1,7 @@
 # Lexmechanic
 
+**[stivens.github.io/Lexmechanic](https://stivens.github.io/Lexmechanic/)**
+
 <p align="center">
   <img src="art/lexmechanic1.jpg" alt="Lexmechanic">
 </p>
@@ -58,102 +60,21 @@ Download the prebuilt x86_64 binary from the latest release. It needs glibc 2.35
 Fedora 36, SteamOS 3 and later) and libcurl, which nearly every desktop distro ships.
 
 ```bash
-# Installs ~/.local/bin/lexmechanic and its icon; run it again to update.
+# Installs into ~/.local; run it again to update.
 curl -L https://github.com/stivens/Lexmechanic/releases/latest/download/lexmechanic-linux-x86_64.tar.gz \
   | tar -xz -C ~/.local
 ```
 
-Then continue with [First run](#first-run).
+Then follow the [documentation](https://stivens.github.io/Lexmechanic/docs/) for the first run, AI providers, Linux
+setup and a desktop shortcut.
 
-### Building from source on Linux
+### Building from source
 
-Build inside a [distrobox](https://distrobox.it) container: it works the same on any distro, including immutable ones
-like SteamOS, and keeps the build toolchain off the host.
+To build it yourself, see [Build from source](https://stivens.github.io/Lexmechanic/docs/build-from-source/).
 
-```bash
-# On the host. Needs distrobox with podman or docker.
-# The container shares your home directory, so whatever it builds there is usable on the host.
-distrobox create --name lexbox --image docker.io/library/archlinux:latest
+## License
 
-# Install dependencies
-distrobox enter lexbox -- sudo pacman -Syu --needed --noconfirm clang which curl jdk-openjdk sbt git
-
-# Clone the Lexmechanic source code
-git clone https://github.com/stivens/Lexmechanic.git ~/Lexmechanic
-cd ~/Lexmechanic
-
-# Build inside the container; the binary lands in the shared home directory
-distrobox enter lexbox -- sbt release
-install -Dm755 target/lexmechanic ~/.local/bin/lexmechanic
-install -Dm644 art/emblem.svg ~/.local/share/icons/lexmechanic.svg
-```
-
-To update, run `git pull` and repeat the `sbt release` and `install` lines.
-
-The binary links against the container's glibc. If the host's is older, it fails with `GLIBC_2.xx not found`; create
-the box from an image of your host distro instead and install the same packages with its package manager.
-
-### First run
-
-```bash
-# Lets the daemon read the hotkey from /dev/input; takes effect after you log in again.
-# On a Steam Deck, set a password with `passwd` first.
-sudo usermod -aG input "$USER"
-
-~/.local/bin/lexmechanic
-```
-
-### Desktop shortcut
-
-A `.desktop` launcher puts Lexmechanic in the app menu, and optionally on the desktop, with the emblem as its icon.
-Run this on the host after installing:
-
-```bash
-mkdir -p ~/.cache/lexmechanic ~/.local/share/applications
-
-# EOF is unquoted on purpose: .desktop files don't expand $HOME, so it's filled in here.
-cat > ~/.local/share/applications/lexmechanic.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=Lexmechanic
-Comment=Translate game dialogue
-Exec=sh -c "exec $HOME/.local/bin/lexmechanic >> $HOME/.cache/lexmechanic/daemon.log 2>&1"
-Icon=$HOME/.local/share/icons/lexmechanic.svg
-Terminal=false
-Categories=Utility;
-Actions=stop;
-
-[Desktop Action stop]
-Name=Stop
-Exec=pkill -x lexmechanic
-EOF
-
-# Optional desktop icon
-desktop=$(xdg-user-dir DESKTOP)
-cp ~/.local/share/applications/lexmechanic.desktop "$desktop/" && chmod +x "$desktop/lexmechanic.desktop"
-```
-
-- **Start:** click it; the daemon starts in the background and opens the UI. The first time
-  you click the desktop icon, KDE may ask whether to trust it.
-- **Stop:** right-click the icon or menu entry and choose **Stop**.
-- **Log:** there is no terminal, so the output goes to `~/.cache/lexmechanic/daemon.log`.
-- Clicking it while the daemon is already running does nothing: the second copy finds the port taken, logs that and
-  exits.
-
-### Linux setup
-
-- **Hotkey:** the daemon reads mouse buttons and keys from `/dev/input` (evdev), which works under Wayland and while
-  another window, such as GeForce NOW, has focus. Without the `input` group, bind `lexmechanic trigger` to a desktop
-  shortcut instead.
-- **Settings:** the cog icon opens the advanced settings: AI provider, model, API key, player character,
-  screenshot and open commands, and port. They are saved to `~/.config/lexmechanic/config.json`.
-- **Screenshots:** the default screenshot command uses KDE's `spectacle`. On other desktops, use one that saves the
-  full screen as a PNG, e.g. `grim` and `{file}` (one argument per line) on wlroots compositors.
-- **API key:** enter it in the advanced settings. A daemon started by autostart or a desktop launcher does not see keys
-  exported in your shell profile.
-- **Display:** to open the UI full-screen, set **Open the UI with** to `firefox`, `--kiosk`, `{url}`, or `flatpak`,
-  `run`, `org.mozilla.firefox`, `--kiosk`, `{url}` for the Flatpak (as on SteamOS). To keep it on a second screen,
-  such as the Steam Deck's built-in one, pin the window there with a window rule.
+Free for any noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). Selling it, or a fork of it, is not allowed.
 
 ---
 

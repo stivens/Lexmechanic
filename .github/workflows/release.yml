@@ -12,7 +12,7 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     # The binary needs the glibc it was linked against or newer, so build on an old one.
-    # README states the resulting minimum glibc.
+    # README and site/docs/install.md state the resulting minimum glibc.
     container: ubuntu:22.04
     env:
       ASSET: lexmechanic-linux-x86_64.tar.gz
@@ -43,6 +43,7 @@ jobs:
         run: |
           install -Dm755 -s target/lexmechanic dist/bin/lexmechanic
           install -Dm644 art/emblem.svg dist/share/icons/lexmechanic.svg
+          install -Dm644 LICENSE dist/share/doc/lexmechanic/LICENSE
           tar -czf "$ASSET" -C dist bin share
 
       - if: github.event_name == 'workflow_dispatch'

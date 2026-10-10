@@ -1,0 +1,18 @@
+---
+layout: default
+---
+<div class="doc">
+  <aside class="doc-nav">
+    <nav aria-label="Documentation">
+      {% assign docs = site.pages | where_exp: "p", "p.nav_order" | sort: "nav_order" %}
+      {% for doc in docs %}
+      <a href="{{ doc.url | relative_url }}"{% if page.url == doc.url %} aria-current="page"{% endif %}>{{ doc.title }}</a>
+      {% endfor %}
+    </nav>
+  </aside>
+  <article class="prose">
+    <h1>{{ page.title }}</h1>
+    {{ content }}
+    <p class="doc-edit"><a href="{{ site.repo_url }}/edit/main/site/{{ page.path }}">Edit this page on GitHub</a></p>
+  </article>
+</div>

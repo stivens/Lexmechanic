@@ -806,7 +806,7 @@
 
 > Vespiadas:
 >
-> "Sa marche tonne sous le poids des espoirs ! Ouvrez vos cœurs, et je submergerai vos 'mes d'une myriade de mots et de sens, chacun d''eux 'tant un pr'sage de salut en moi !" Le Navigator continue de se convulser violemment sur son si'ge, en poussant des cris per'ants et des rires sardoniques, mais sa crise s'arr'te soudainement. Son visage est tremp' de noir et de carmin — le liquide poisseux qui s''coulait de sa troisi'me paupi're s'est transform' en un v'ritable ruisseau m'l' au sang qui lui sort du nez, et un gonflement violac' entoure son 'il.
+> "Sa marche tonne sous le poids des espoirs ! Ouvrez vos cœurs, et je submergerai vos âmes d'une myriade de mots et de sens, chacun d'eux étant un présage de salut en moi !" Le Navigator continue de se convulser violemment sur son siège, en poussant des cris perçants et des rires sardoniques, mais sa crise s'arrête soudainement. Son visage est trempé de noir et de carmin — le liquide poisseux qui s'écoulait de sa troisième paupière s'est transformé en un véritable ruisseau mêlé au sang qui lui sort du nez, et un gonflement violacé entoure son œil.
 >
 > 1. [Continuer]
 

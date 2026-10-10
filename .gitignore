@@ -20,3 +20,6 @@ project/project/
 .idea/
 project/metals.sbt
 .mcp.json
+
+site/_site/
+site/.jekyll-cache/

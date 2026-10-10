@@ -1,0 +1,147 @@
+---
+layout: default
+---
+{% assign img = '/assets/img/' | relative_url %}
+{% assign video = '/assets/video/' | relative_url %}
+{% assign examples = site.data.examples %}
+{% assign default_scene = examples.scenes | where: 'featured', true | map: 'id' | first %}
+{% assign default_lang = examples.languages.first.code %}
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="wordmark">{{ site.title }}</h1>
+    <p class="lede">
+      Press a shortcut during a conversation in a game. Everything after that is automatic,
+      and the dialogue appears in your own language.
+    </p>
+    <div class="actions">
+      <a class="button button-primary" href="{{ site.download_url }}">Download for Linux</a>
+      <a class="button" href="{% link docs/index.md %}">Read the docs</a>
+    </div>
+    <div class="cmd">
+      <code>curl -L {{ site.download_url }} | tar -xz -C ~/.local</code>
+      <button type="button" class="copy" data-copy aria-label="Copy install command">Copy</button>
+    </div>
+  </div>
+  <figure id="how" class="hero-media">
+    <video data-autoplay muted loop playsinline preload="metadata" poster="{{ img }}poster.webp" width="1920" height="1080"
+           aria-label="Lexmechanic capturing a game dialogue, cropping it and translating it into nine languages">
+      <source src="{{ video }}how-it-works-loop.webm" type="video/webm">
+      <source src="{{ video }}how-it-works-loop.mp4" type="video/mp4">
+    </video>
+  </figure>
+</section>
+
+<section id="examples" class="section">
+  <div class="section-head">
+    <p class="eyebrow">Examples</p>
+    <h2>Original and translation</h2>
+    <p>Real screenshots, translated by Lexmechanic. Pick a scene and a language.</p>
+  </div>
+  <div class="showcase" data-showcase data-scene="{{ default_scene }}" data-lang="{{ default_lang }}">
+    <div class="showcase-controls">
+      <span class="label" id="scene-label">Scene</span>
+      <div class="picker" role="group" aria-labelledby="scene-label">
+        {% for scene in examples.scenes %}
+        <button type="button" data-pick-scene="{{ scene.id }}" aria-pressed="{% if scene.id == default_scene %}true{% else %}false{% endif %}">{{ forloop.index }}</button>
+        {% endfor %}
+      </div>
+      <span class="label" id="lang-label">Language</span>
+      <div class="picker" role="group" aria-labelledby="lang-label">
+        {% for lang in examples.languages %}
+        <button type="button" data-pick-lang="{{ lang.code }}" aria-pressed="{% if lang.code == default_lang %}true{% else %}false{% endif %}">{{ lang.label }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="showcase-source">
+      <p class="label">Original</p>
+      {% for scene in examples.scenes %}
+      <img class="showcase-crop" data-scene="{{ scene.id }}" src="{{ img }}{{ scene.id }}-dialog-crop.webp"
+           alt="Scene {{ forloop.index }}: the original English dialogue window" width="1870" height="516" loading="lazy"{% if scene.id != default_scene %} hidden{% endif %}>
+      {% endfor %}
+    </div>
+    <div class="showcase-output">
+      <p class="label">Translation</p>
+      {% for scene in examples.scenes %}{% for lang in examples.languages %}
+      <div class="showcase-panel" data-scene="{{ scene.id }}" data-lang="{{ lang.code }}"{% unless scene.id == default_scene and lang.code == default_lang %} hidden{% endunless %}>
+        {% include dialogue.html scene=scene lang=lang.code %}
+      </div>
+      {% endfor %}{% endfor %}
+    </div>
+  </div>
+  <p class="section-foot"><a class="more" href="{% link examples.html %}">All scenes and languages on one page</a></p>
+</section>
+
+<section id="features" class="section">
+  <div class="section-head">
+    <p class="eyebrow">Features</p>
+    <h2>Built for playing, not for modding</h2>
+  </div>
+  <div class="features">
+    <article class="feature">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/></svg>
+      <h3>No mods, no game files</h3>
+      <p>It only reads the screen, so it works where mods can't: cloud streaming like GeForce NOW, any store, any version.</p>
+    </article>
+    <article class="feature">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="5"/><path d="M12 7v3"/></svg>
+      <h3>A hotkey that always fires</h3>
+      <p>A spare mouse button or any key, read straight from the input device, so it works under Wayland and while the game has focus.</p>
+    </article>
+    <article class="feature">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="13" height="9" rx="1"/><rect x="17" y="9" width="5" height="10" rx="1"/><path d="M6 18h5M8.5 14v4"/></svg>
+      <h3>On a second screen</h3>
+      <p>The translation opens in a browser window you can keep anywhere, like the Steam Deck's built-in screen while you play on a monitor.</p>
+    </article>
+    <article class="feature">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <h3>100+ languages</h3>
+      <p>From Polish, Japanese and Hindi to Silesian, Kashubian and Latin.</p>
+    </article>
+    <article class="feature">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h5v5c0 3-2 5-4.5 6M14 7h5v5c0 3-2 5-4.5 6"/></svg>
+      <h3>Keeps the voice of the game</h3>
+      <p>Names, tone and style stay intact, and languages with grammatical gender address your character correctly.</p>
+    </article>
+    <article class="feature">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/></svg>
+      <h3>Free and private</h3>
+      <p>Bring your own key; Gemini, OpenRouter and Mistral have free tiers. Only the dialogue window goes to the provider you pick. No accounts, no telemetry.</p>
+    </article>
+  </div>
+</section>
+
+<section id="faq" class="section">
+  <div class="section-head">
+    <p class="eyebrow">FAQ</p>
+    <h2>Questions</h2>
+  </div>
+  <div class="faq">
+    <details>
+      <summary>Which games does it work with?</summary>
+      <p>Any game that shows its dialogue as text on screen. You mark where the dialogue window is once, and can tell it the game's name for better translations.</p>
+    </details>
+    <details>
+      <summary>Does it run on Windows or macOS?</summary>
+      <p>Not yet. Releases are built for x86_64 Linux, which includes SteamOS on the Steam Deck.</p>
+    </details>
+    <details>
+      <summary>Which AI provider should I pick?</summary>
+      <p>Start with Gemini, the default: a key from Google AI Studio is free. If you hit its rate limits, see the other <a href="{% link docs/ai-providers.md %}">AI providers</a>.</p>
+    </details>
+  </div>
+</section>
+
+<section class="lore">
+  <img src="{{ img }}lexmechanic3.webp" alt="A Lexmechanic of the Adeptus Mechanicus" width="688" height="1025" loading="lazy">
+  <blockquote>
+    <p>
+      A Lexmechanic of the Adeptus Mechanicus, also known as a Calculus Logi, is a specialised Tech-Priest whose primary
+      duty is the collection, processing, analysis and organisation of information.
+    </p>
+    <p>
+      In the grim darkness of the 41st Millennium, information is power, knowledge is sacred, and an error in a
+      calculation can condemn entire armies or planetary populations to death.
+    </p>
+  </blockquote>
+</section>
