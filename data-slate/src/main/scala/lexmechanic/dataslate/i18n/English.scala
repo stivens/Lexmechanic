@@ -1,6 +1,6 @@
 package lexmechanic.dataslate.i18n
 
-import lexmechanic.noosphere.{Gender, HotkeyProblem}
+import lexmechanic.noosphere.{Gender, HotkeyProblem, Region}
 
 object English extends Messages:
   val name = "English"
@@ -11,32 +11,46 @@ object English extends Messages:
   val statusFailed = "Error"
   val statusReady = "Ready"
 
+  val offlineBanner = "The daemon is not responding. Start lexmechanic - this page reconnects on its own."
+  val dismiss = "Dismiss"
+
   val original = "Original"
-  val clear = "Clear"
   val calibrate = "Calibrate"
   val translate = "Translate"
+  val settings = "Settings"
+  val back = "Back"
 
   val game = "Game"
   val anyGame = "Any game"
   val translateInto = "Translate into"
-  val interfaceLanguage = "Interface"
+  val interfaceLanguage = "Language"
   val hotkey = "Hotkey"
-  val hotkeyLearnHint = "Click, then press the mouse button or key to use"
-  val hotkeyCancelHint = "Click to cancel"
+  val change = "Change"
   val pressAButton = "Press a button…"
   val noHotkey = "None"
   def hotkeyUnavailable(problem: HotkeyProblem) = s"Hotkey unavailable: ${problem.description}."
   val instructions = "Instructions"
   val instructionsHint =
-    "Extra guidance for the Abominable Intelligence, saved when you leave the box. The game, target language and answer format are always added."
+    "Extra guidance for the Abominable Intelligence. The game, target language and answer format are always added."
   val restoreDefault = "Restore default"
+  val saved = "Saved"
 
-  val advanced = "Advanced settings"
-  val advancedHint = "Each field is saved when you leave it."
+  val sectionTranslation = "Translation"
+  val sectionCapture = "Capture"
+  val sectionAi = "AI"
+  val sectionInterface = "Interface"
+  val sectionSystem = "System"
+
+  val region = "Dialogue region"
+  val regionNotSet = "Not set - the whole screen is sent"
+  def regionSet(region: Region) = s"${region.width}×${region.height} px at ${region.x}, ${region.y}"
+
   val provider = "AI provider"
   val model = "Model"
   val apiKey = "API key"
   def apiKeyFallback(variable: String) = s"or set $variable"
+  def apiKeyFromEnvironment(variable: String) = s"Using $variable from the environment"
+  val noApiKey = "No key - translations will fail"
   val captain = "Player character"
   def gender(gender: Gender) = gender match
     case Gender.Male   => "Male"
@@ -49,9 +63,13 @@ object English extends Messages:
   val openCommandHint =
     "One argument per line; {url} is replaced with this page's address. Leave empty to open nothing."
 
-  val noRegion = "No region calibrated yet - the whole screen is sent. Use Calibrate to select the dialogue window."
-  val emptyHistory = "Press the hotkey while a dialogue is on screen."
+  val setupTitle = "Setup"
+  val setupKey = "AI provider key"
+  val openSettings = "Open settings"
+  def pressHotkey(key: String) = s"Press $key while a dialogue is on screen."
+
   val earlier = "Earlier"
+  val clearHistory = "Clear history"
 
   val calibrationInstructions = "Drag over the dialogue window, then save."
   val cancel = "Cancel"

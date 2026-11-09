@@ -16,13 +16,11 @@ import scala.scalajs.js
 object App:
   private val server = Var(Option.empty[State])
   private val pending = Var(0)
-  private val instructionsOpen = Var(false)
+  private val settingsOpen = Var(false)
   private val postAnswered = EventBus[Unit]()
   private val showOriginal = WebStorageVar.localStorage("lexmechanic.original", syncOwner = None).bool(default = true)
 
   private[dataslate] val state: Signal[Option[State]] = server.signal.distinct
-
-  private val hotkey: Signal[Option[HotkeyState]] = state.map(_.map(_.hotkey)).distinct
 
   private val status: Signal[ServitorStatus] = state.combineWith(pending.signal).map {
     case (None, _)                                     => ServitorStatus.Offline
@@ -33,7 +31,7 @@ object App:
 
   private[dataslate] val offline = state.map(_.isEmpty)
 
-  private val actionsDisabled = status.map(s => s == ServitorStatus.Busy || s == ServitorStatus.Offline)
+  private[dataslate] val actionsDisabled = status.map(s => s == ServitorStatus.Busy || s == ServitorStatus.Offline)
 
   private val polling: EventStream[Option[State]] =
     // Restarting on each POST answer drops an in-flight poll, which may carry the state from before the POST.
@@ -66,18 +64,23 @@ object App:
       )
     )
 
-  private[dataslate] def saveSettings(settings: Settings): Future[Boolean] = post("/settings", settings.asJson.noSpaces)
+  private[dataslate] def saveSettings(settings: Settings, saved: Observer[Unit] = Observer.empty): Future[Boolean] =
+    val result = post("/settings", settings.asJson.noSpaces)
+    result.foreach(ok => if ok then saved.onNext(()))
+    result
 
   // Polls must not clobber unsaved typing, nor a failed poll blank it; a save re-sets it even when the
   // server's normalized value equals the previous one.
-  private[dataslate] def savedText(read: State => String, settings: String => Settings) =
-    val saved = EventBus[String]()
+  private[dataslate] def savedText(read: State => String, settings: String => Settings, saved: Observer[Unit]) =
+    val resync = EventBus[String]()
     Seq(
-      value <-- EventStream.merge(state.changes.collectSome.map(read).distinct, saved.events),
+      value <-- EventStream.merge(state.changes.collectSome.map(read).distinct, resync.events),
       onChange.mapToValue --> { text =>
-        saveSettings(settings(text)).foreach(_ => server.now().foreach(s => saved.emit(read(s))))
+        saveSettings(settings(text), saved).foreach(_ => server.now().foreach(s => resync.emit(read(s))))
       }
     )
+
+  private[dataslate] def openSettings(): Unit = settingsOpen.set(true)
 
   def main(args: Array[String]): Unit =
     renderOnDomContentLoaded(dom.document.getElementById("app"), view)
@@ -91,165 +94,77 @@ object App:
       .filter(s => s.language.isEmpty || s.interfaceLanguage.isEmpty)
       .take(1) --> saveBrowserDefaults,
     I18n.messages --> { m => dom.document.documentElement.setAttribute("lang", m.lang) },
-    header,
-    settings,
-    Advanced.panel,
-    instructionsEditor,
-    mainView,
-    Calibration.overlay(state.map(_.flatMap(_.region))),
-    child.maybe <-- state.map(_.flatMap(_.error)).splitOption((_, message) => div(cls := "error", text <-- message))
+    documentEvents(_.onKeyDown.filter(_.key == "Escape")) --> { _ =>
+      if Calibration.isOpen then Calibration.close() else settingsOpen.set(false)
+    },
+    topBar,
+    banner,
+    Reading.view.amend(hidden <-- settingsOpen.signal),
+    SettingsPage.view.amend(hidden <-- settingsOpen.signal.map(!_)),
+    Calibration.overlay
   )
 
-  private def header = headerTag(
-    div(cls := "title", img(src := "/emblem.svg", alt := ""), "Lexmechanic"),
+  private def topBar = headerTag(
+    cls := "topbar",
+    div(
+      cls := "title",
+      span(
+        hidden <-- settingsOpen.signal,
+        img(src := "/emblem.svg", alt := ""),
+        span(cls := "wordmark", "Lexmechanic")
+      ),
+      span(
+        hidden <-- settingsOpen.signal.map(!_),
+        button(cls := "back", text <-- t(_.back), onClick --> { _ => settingsOpen.set(false) }),
+        span(text <-- t(_.settings))
+      )
+    ),
     div(
       cls := "status",
       dataAttr("state") <-- status.map(_.toString.toLowerCase),
       span(cls := "dot"),
-      span(text <-- t(status)((m, s) => s.label(m)))
+      span(cls := "status-label", text <-- t(status)((m, s) => s.label(m)))
     ),
     button(
       cls := "switch",
       role := "switch",
+      hidden <-- settingsOpen.signal,
       aria.checked <-- showOriginal.signal.map(_.toString),
       span(cls := "track"),
       span(text <-- t(_.original)),
       onClick --> { _ => showOriginal.update(!_) }
     ),
     button(
-      text <-- t(_.clear),
-      disabled <-- state.map(_.forall(_.history.isEmpty)),
-      onClick --> { _ => post("/clear") }
-    ),
-    button(
-      text <-- t(_.calibrate),
-      disabled <-- actionsDisabled,
-      onClick --> { _ => post("/calibrate").foreach(ok => if ok then Calibration.open()) }
-    ),
-    button(
+      cls := "primary",
       text <-- t(_.translate),
       disabled <-- actionsDisabled,
       onClick --> { _ => post("/capture") }
     ),
-    Advanced.toggle
+    iconButton(_.settings)(
+      aria.expanded <-- settingsOpen.signal,
+      svg.svg(svg.viewBox := "0 0 24 24", svg.path(svg.fillRule := "evenodd", svg.d := CogPath)),
+      onClick --> { _ => settingsOpen.update(!_) }
+    )
   )
 
-  private def settings = div(
-    cls := "settings",
-    field(
-      _.game,
-      input(
-        typ := "text",
-        spellCheck := false,
-        placeholder <-- t(_.anyGame),
-        disabled <-- offline,
-        savedText(_.game, game => Settings(game = Some(game)))
-      )
-    ).amend(cls := "game"),
-    field(
-      _.translateInto,
-      select(
-        disabled <-- offline,
-        Language.all.map(l => option(value := l.code, text <-- t(_.languageLabel(l)))),
-        controlled(
-          value <-- state.map(_.flatMap(_.language).fold("")(_.code)),
-          onChange.mapToValue --> { code => saveSettings(Settings(language = Language.byCode.get(code))) }
+  // Material Symbols "settings" (Apache 2.0).
+  private val CogPath =
+    "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"
+
+  private def banner = div(
+    cls := "banners",
+    child(div(cls := "banner", role := "alert", text <-- t(_.offlineBanner))) <-- offline,
+    child.maybe <-- state
+      .map(_.flatMap(_.error))
+      .splitOption((_, message) =>
+        div(
+          cls := "banner",
+          role := "alert",
+          span(text <-- message),
+          iconButton(_.dismiss)(cls := "quiet dismiss", "✕", onClick --> { _ => post("/dismiss") })
         )
       )
-    ),
-    div(
-      cls := "field",
-      span(cls := "field-label", text <-- t(_.hotkey)),
-      button(
-        dataAttr("learning") <-- hotkey.map(_.exists(_.learning).toString),
-        disabled <-- hotkey.map(_.forall(_.unavailable.isDefined)),
-        title <-- t(hotkey) { (m, current) =>
-          current.fold("") { h =>
-            h.unavailable.fold(if h.learning then m.hotkeyCancelHint else m.hotkeyLearnHint)(m.hotkeyUnavailable)
-          }
-        },
-        text <-- t(hotkey) { (m, current) =>
-          current.fold("…")(h => if h.learning then m.pressAButton else h.button.fold(m.noHotkey)(m.keyName))
-        },
-        onClick(_.sample(hotkey)) --> { h => post(if h.exists(_.learning) then "/hotkey/cancel" else "/hotkey/learn") }
-      )
-    ),
-    field(
-      _.interfaceLanguage,
-      select(
-        disabled <-- offline,
-        Messages.all.map(m => option(value := m.lang, m.name)),
-        controlled(
-          value <-- I18n.messages.map(_.lang),
-          onChange.mapToValue --> { lang => saveSettings(Settings(interfaceLanguage = Some(lang))) }
-        )
-      )
-    ),
-    button(
-      text <-- t(_.instructions),
-      aria.expanded <-- instructionsOpen.signal,
-      onClick --> { _ => instructionsOpen.update(!_) }
-    )
   )
 
-  private[dataslate] def field(name: Messages => String, control: HtmlElement) = label(
-    cls := "field",
-    span(cls := "field-label", text <-- t(name)),
-    control
-  )
-
-  private def instructionsEditor = div(
-    cls := "prompt-editor",
-    cls("open") <-- instructionsOpen.signal,
-    div(cls := "hint", text <-- t(_.instructionsHint)),
-    textArea(
-      rows := 6,
-      spellCheck := false,
-      disabled <-- offline,
-      savedText(_.instructions, text => Settings(instructions = Some(text)))
-    ),
-    button(
-      text <-- t(_.restoreDefault),
-      disabled <-- state.map(_.forall(_.instructions == Instructions.default)),
-      onClick --> { _ => saveSettings(Settings(instructions = Some(Instructions.default))) }
-    )
-  )
-
-  private def mainView = mainTag(
-    child.maybe <-- hotkey
-      .map(_.flatMap(_.unavailable))
-      .splitOption((_, problem) => div(cls := "hint", text <-- t(problem)(_.hotkeyUnavailable(_)))),
-    child(div(cls := "hint", text <-- t(_.noRegion))) <-- state.map(_.exists(_.region.isEmpty)),
-    child(div(cls := "empty", text <-- t(_.emptyHistory))) <-- state.map(_.exists(_.history.isEmpty)),
-    entries(_.take(1)),
-    child(div(cls := "history-title", text <-- t(_.earlier))) <-- state.map(_.exists(_.history.sizeIs > 1)),
-    sectionTag(
-      cls := "history",
-      entries(_.drop(1))
-    )
-  )
-
-  private def entries(select: List[Entry] => List[Entry]) =
-    children <-- state.map(_.toList.flatMap(s => select(s.history))).split(_.id)((_, entry, _) => renderEntry(entry))
-
-  private def renderEntry(entry: Entry) =
-    val dialogue = entry.dialogue
-    val translationLang = lang := entry.language.code
-    // The source language is detected by the model and not reported, so it is marked unknown.
-    val originalLang = lang := ""
-    articleTag(
-      cls := "entry",
-      dialogue.speaker.map(div(cls := "speaker", _)),
-      p(cls := "translation", translationLang, dialogue.text.translation),
-      p(cls := "original", originalLang, dialogue.text.original),
-      Option.when(dialogue.answers.nonEmpty)(
-        ol(
-          dialogue.answers.map(a =>
-            li(
-              div(cls := "translation", translationLang, a.translation),
-              div(cls := "original", originalLang, a.original)
-            )
-          )
-        )
-      )
-    )
+  private def iconButton(label: Messages => String)(content: Modifier[Button]*) =
+    button(cls := "icon", aria.label <-- t(label), title <-- t(label), content)

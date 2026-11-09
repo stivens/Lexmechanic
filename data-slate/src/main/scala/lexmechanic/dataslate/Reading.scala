@@ -1,0 +1,71 @@
+package lexmechanic.dataslate
+
+import com.raquo.laminar.api.L.*
+import lexmechanic.dataslate.App.{post, state}
+import lexmechanic.dataslate.i18n.I18n.t
+import lexmechanic.dataslate.i18n.Messages
+import lexmechanic.noosphere.*
+
+object Reading:
+  def view = mainTag(
+    cls := "reading",
+    child(setup) <-- state.map(_.exists(_.history.isEmpty)),
+    entries(_.take(1)),
+    child(div(cls := "history-title", text <-- t(_.earlier))) <-- state.map(_.exists(_.history.sizeIs > 1)),
+    sectionTag(cls := "history", entries(_.drop(1))),
+    child(
+      button(cls := "quiet clear", text <-- t(_.clearHistory), onClick --> { _ => post("/clear") })
+    ) <-- state.map(_.exists(_.history.nonEmpty))
+  )
+
+  private def setup = sectionTag(
+    cls := "setup",
+    h2(text <-- t(_.setupTitle)),
+    ol(
+      step(
+        _.setupKey,
+        state.map(_.exists(SettingsPage.hasKey)),
+        t(state)((m, current) => current.fold("")(s => SettingsPage.keyStatus(m, s).getOrElse(s.provider.toString))),
+        button(text <-- t(_.openSettings), onClick --> { _ => SettingsPage.openAi() })
+      ),
+      step(_.region, Capture.region.map(_.isDefined), Capture.regionText, Capture.calibrateButton),
+      step(_.hotkey, Capture.usableHotkey.map(_.isDefined), Capture.hotkeyText, Capture.hotkeyButton)
+    ),
+    p(
+      cls := "next",
+      text <-- t(Capture.usableHotkey)((m, key) => m.pressHotkey(key.fold(m.translate)(m.keyName)))
+    )
+  )
+
+  private def step(name: Messages => String, done: Signal[Boolean], detail: Signal[String], action: HtmlElement) = li(
+    cls("done") <-- done,
+    span(cls := "mark", aria.hidden := true, text <-- done.map(if _ then "✓" else "!")),
+    div(cls := "step-text", div(cls := "step-name", text <-- t(name)), div(cls := "step-detail", text <-- detail)),
+    action
+  )
+
+  private def entries(select: List[Entry] => List[Entry]) =
+    children <-- state.map(_.toList.flatMap(s => select(s.history))).split(_.id)((_, entry, _) => renderEntry(entry))
+
+  private def renderEntry(entry: Entry) =
+    val dialogue = entry.dialogue
+    val translationLang = lang := entry.language.code
+    // The source language is detected by the model and not reported, so it is marked unknown.
+    val originalLang = lang := ""
+    articleTag(
+      cls := "entry",
+      dialogue.speaker.map(div(cls := "speaker", _)),
+      p(cls := "translation", translationLang, dialogue.text.translation),
+      p(cls := "original", originalLang, dialogue.text.original),
+      Option.when(dialogue.answers.nonEmpty)(
+        ol(
+          cls := "answers",
+          dialogue.answers.map(a =>
+            li(
+              div(cls := "translation", translationLang, a.translation),
+              div(cls := "original", originalLang, a.original)
+            )
+          )
+        )
+      )
+    )

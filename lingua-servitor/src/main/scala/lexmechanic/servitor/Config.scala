@@ -34,10 +34,12 @@ final case class Config(
 
   def storedKey: Option[String] = apiKeys.get(provider.keyVariable)
 
+  def environmentKey: Option[String] = Option(System.getenv(provider.keyVariable))
+
   def apiKey: Either[String, String] =
     storedKey
-      .orElse(sys.env.get(provider.keyVariable))
-      .toRight(s"No $provider API key: set it in the advanced settings, or set ${provider.keyVariable}")
+      .orElse(environmentKey)
+      .toRight(s"No $provider API key: set it in the settings, or set ${provider.keyVariable}")
 
   def voxLink: Either[String, VoxLink] = apiKey.map(VoxLink(provider, _, model.getOrElse(provider.defaultModel)))
 

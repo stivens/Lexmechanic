@@ -29,7 +29,7 @@ final class Servitor(initial: Config):
   private def state: State = synchronized {
     State(
       busy = busy,
-      error = error.orElse(config.apiKey.left.toOption),
+      error = error,
       region = config.region,
       game = config.game,
       language = config.language,
@@ -40,6 +40,7 @@ final class Servitor(initial: Config):
       provider = config.provider,
       model = config.model,
       apiKey = config.storedKey,
+      apiKeyFromEnvironment = config.storedKey.isEmpty && config.environmentKey.isDefined,
       captain = config.captain,
       port = config.port,
       restartRequired = config.port != initial.port,
@@ -176,7 +177,8 @@ final class Servitor(initial: Config):
             None
           case Left(e) => Some(400 -> e.reason)
       }
-    case ("POST", "/clear") =>
+    case ("POST", "/dismiss") => act(None)
+    case ("POST", "/clear")   =>
       act {
         synchronized { history = Nil }
         None

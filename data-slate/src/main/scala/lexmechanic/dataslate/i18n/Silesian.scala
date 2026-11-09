@@ -1,6 +1,6 @@
 package lexmechanic.dataslate.i18n
 
-import lexmechanic.noosphere.{Gender, HotkeyProblem}
+import lexmechanic.noosphere.{Gender, HotkeyProblem, Region}
 
 object Silesian extends Messages:
   val name = "Ślōnsko godka"
@@ -13,29 +13,43 @@ object Silesian extends Messages:
   val statusFailed = "Feler"
   val statusReady = "Fertich"
 
+  val offlineBanner = "Dymōn niy ôdpowiadŏ. Puść lexmechanic – strōna sama sie połōnczy."
+  val dismiss = "Zawrzij"
+
   val original = "Ôryginał"
-  val clear = "Wypucuj"
   val calibrate = "Ustŏw"
   val translate = "Przełōż"
+  val settings = "Ustawiynia"
+  val back = "Nazŏd"
 
   val game = "Szpil"
   val anyGame = "Jaki bądź szpil"
   val translateInto = "Przełōż na"
-  val interfaceLanguage = "Jynzyk aplikacyje"
+  val interfaceLanguage = "Jynzyk"
   val hotkey = "Skrōt"
-  val hotkeyLearnHint = "Kliknij, a potym naciś knefel myszy abo klawisz, kerego chcesz używać"
-  val hotkeyCancelHint = "Kliknij, coby ôdwołać"
+  val change = "Zmiyń"
   val instructions = "Instrukcyje"
   val instructionsHint =
-    "Dodatkowe wskazōwki dlŏ Plugawyj Inteligyncyje, spamiyntywane, jak wyjdziesz z pola. Szpil, docelowy jynzyk i format ôdpowiedzi sōm zawdy przidŏwane."
+    "Dodatkowe wskazōwki dlŏ Plugawyj Inteligyncyje. Szpil, docelowy jynzyk i format ôdpowiedzi sōm zawdy przidŏwane."
   val restoreDefault = "Prziwrōć wychodne"
+  val saved = "Spamiyntane"
 
-  val advanced = "Zaawansowane ustawiynia"
-  val advancedHint = "Kożde pole je spamiyntywane, jak z niego wyjdziesz."
+  val sectionTranslation = "Przekłŏd"
+  val sectionCapture = "Zrzut"
+  val sectionAi = "AI"
+  val sectionInterface = "Aplikacyjŏ"
+  val sectionSystem = "Systym"
+
+  val region = "Ôbszar dialogu"
+  val regionNotSet = "Niy ustawiōny – posyłany je cołki ekran"
+  def regionSet(region: Region) = s"${region.width}×${region.height} px przi ${region.x}, ${region.y}"
+
   val provider = "Dostawca AI"
   val model = "Model"
   val apiKey = "Klucz API"
   def apiKeyFallback(variable: String) = s"abo ustŏw $variable"
+  def apiKeyFromEnvironment(variable: String) = s"Używany je $variable ze zmiynnych strzodowiska"
+  val noApiKey = "Niy ma klucza – przekłŏdanie niy pōjdzie"
   val captain = "Postać graczŏ"
   def gender(gender: Gender) = gender match
     case Gender.Male   => "Chop"
@@ -55,10 +69,13 @@ object Silesian extends Messages:
     case HotkeyProblem.NoPermission =>
       "Skrōt niydostympny: niy ma dostympu do urzōndzyń z kneflami – puść `sudo usermod -aG input $USER` i zaloguj sie zaś."
 
-  val noRegion =
-    "Ôbszar jeszcze niy je skalibrowany – posyłany je cołki ekran. Użyj knefla Ustŏw, coby ôznaczyć ôkno dialogu."
-  val emptyHistory = "Naciś skrōt, jak na ekranie je dialog."
+  val setupTitle = "Rychtowanie"
+  val setupKey = "Klucz dostawcy AI"
+  val openSettings = "Ôtwōrz ustawiynia"
+  def pressHotkey(key: String) = s"Jak na ekranie je dialog, naciś: $key."
+
   val earlier = "Wczaśnij"
+  val clearHistory = "Wypucuj historyjõ"
 
   val calibrationInstructions = "Ôznacz ôkno dialogu, a potym spamiyntej."
   val cancel = "Ôdwołej"
