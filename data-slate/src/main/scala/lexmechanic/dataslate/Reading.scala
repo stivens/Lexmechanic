@@ -1,15 +1,21 @@
 package lexmechanic.dataslate
 
 import com.raquo.laminar.api.L.*
-import lexmechanic.dataslate.App.{post, state}
+import lexmechanic.dataslate.App.{banner, post, state}
 import lexmechanic.dataslate.i18n.I18n.t
 import lexmechanic.dataslate.i18n.Messages
 import lexmechanic.noosphere.*
 
 object Reading:
+  private val setupShown = state.map(_.exists(_.history.isEmpty)).distinct
+
   def view = mainTag(
     cls := "reading",
-    child(setup) <-- state.map(_.exists(_.history.isEmpty)),
+    child(setup) <-- setupShown,
+    // The setup checklist already lists a hotkey problem.
+    child.maybe <-- Capture.hotkeyProblem
+      .combineWithFn(setupShown)((problem, shown) => if shown then None else problem)
+      .splitOption((_, problem) => banner("status")(text <-- t(problem)(_.hotkeyUnavailable(_)))),
     entries(_.take(1)),
     child(div(cls := "history-title", text <-- t(_.earlier))) <-- state.map(_.exists(_.history.sizeIs > 1)),
     sectionTag(cls := "history", entries(_.drop(1))),
@@ -39,7 +45,7 @@ object Reading:
 
   private def step(name: Messages => String, done: Signal[Boolean], detail: Signal[String], action: HtmlElement) = li(
     cls("done") <-- done,
-    span(cls := "mark", aria.hidden := true, text <-- done.map(if _ then "✓" else "!")),
+    span(cls := "mark", aria.hidden := true, text <-- done.foldBoolean("✓", "!")),
     div(cls := "step-text", div(cls := "step-name", text <-- t(name)), div(cls := "step-detail", text <-- detail)),
     action
   )

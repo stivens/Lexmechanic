@@ -12,5 +12,5 @@ object I18n:
 
   def t(message: Messages => String): Signal[String] = messages.map(message)
 
-  def t[A](value: Signal[A])(message: (Messages, A) => String): Signal[String] =
+  def t[A, B](value: Signal[A])(message: (Messages, A) => B): Signal[B] =
     messages.combineWithFn(value)(message)

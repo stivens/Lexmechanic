@@ -6,17 +6,22 @@ import lexmechanic.dataslate.i18n.I18n.{messages, t}
 import lexmechanic.dataslate.i18n.Messages
 import lexmechanic.noosphere.*
 
+import scala.concurrent.Future
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.util.Success
+
 object SettingsPage:
-  def view = mainTag(
+  lazy val view = mainTag(
     cls := "settings-page",
     section(_.sectionTranslation)(
-      row(_.game) { saved =>
+      row(_.game) { field =>
         input(
+          field.control,
           typ := "text",
           spellCheck := false,
           placeholder <-- t(_.anyGame),
           disabled <-- offline,
-          savedText(_.game, game => Settings(game = Some(game)), saved)
+          field.text(_.game, game => Some(Settings(game = Some(game))))
         )
       },
       row(_.translateInto)(
@@ -42,20 +47,22 @@ object SettingsPage:
     aiSection,
     section(_.sectionInterface)(
       row(_.interfaceLanguage)(
-        choice(Messages.all, _.lang, m => m.name, messages.map(_.lang), m => Settings(interfaceLanguage = Some(m.lang)))
+        choice(Messages.all, _.lang, _.name, messages.map(_.lang), m => Settings(interfaceLanguage = Some(m.lang)))
       )
     ),
     section(_.sectionSystem, collapsed = true)(
-      row(_.port) { saved =>
+      row(_.port) { field =>
         Seq(
           input(
+            field.control,
+            field.describedBy,
             typ := "number",
             minAttr := "1",
             maxAttr := "65535",
             disabled <-- offline,
-            savedText(_.port.toString, port => Settings(port = port.toIntOption), saved)
+            field.text(_.port.toString, _.toIntOption.map(port => Settings(port = Some(port))))
           ),
-          child(div(cls := "hint", text <-- t(_.portRestart))) <-- state.map(_.exists(_.restartRequired))
+          child(div(field.hint, text <-- t(_.portRestart))) <-- state.map(_.exists(_.restartRequired))
         )
       },
       row(_.captureCommand, wide = true)(
@@ -74,28 +81,30 @@ object SettingsPage:
 
   private lazy val aiSection = section(_.sectionAi)(
     row(_.provider)(enumChoice(Heretek.values, _.provider, _.toString, h => Settings(provider = Some(h)))),
-    row(_.model) { saved =>
+    row(_.model) { field =>
       input(
+        field.control,
         typ := "text",
         spellCheck := false,
         disabled <-- offline,
         placeholder <-- state.map(_.fold("")(_.provider.defaultModel)),
-        savedText(_.model.getOrElse(""), model => Settings(model = Some(model)), saved)
+        field.text(_.model.getOrElse(""), model => Some(Settings(model = Some(model))))
       )
     },
-    row(_.apiKey) { saved =>
+    row(_.apiKey) { field =>
       Seq(
         input(
+          field.control,
+          field.describedBy,
           typ := "password",
           autoComplete := "off",
           spellCheck := false,
           disabled <-- offline,
           placeholder <-- t(state.map(_.fold("")(_.provider.keyVariable)))(_.apiKeyFallback(_)),
-          savedText(_.apiKey.getOrElse(""), key => Settings(apiKey = Some(key)), saved)
+          field.text(_.apiKey.getOrElse(""), key => Some(Settings(apiKey = Some(key))))
         ),
-        child.maybe <-- messages
-          .combineWithFn(state)((m, current) => current.flatMap(keyStatus(m, _)))
-          .splitOption((_, status) => div(cls := "hint", text <-- status))
+        child.maybe <-- t(state)((m, current) => current.flatMap(keyStatus(m, _)))
+          .splitOption((_, status) => div(field.hint, text <-- status))
       )
     }
   )
@@ -111,26 +120,36 @@ object SettingsPage:
       if state.apiKeyFromEnvironment then m.apiKeyFromEnvironment(state.provider.keyVariable) else m.noApiKey
     )
 
+  private final class Field(val id: String, saved: Observer[Unit]):
+    def text(read: State => String, settings: String => Option[Settings]) = savedText(read, settings, save)
+    def save(settings: Settings): Future[Boolean] =
+      saveSettings(settings).andThen { case Success(true) => saved.onNext(()) }
+    def control: Modifier[HtmlElement] = idAttr := id
+    def describedBy: Modifier[HtmlElement] = aria.describedBy := s"$id-hint"
+    def hint: Modifier[HtmlElement] = Seq(cls := "hint", idAttr := s"$id-hint")
+
+  private var fields = 0
+
   private def section(title: Messages => String, collapsed: Boolean = false)(rows: HtmlElement*) =
     val heading = h2(text <-- t(title))
     sectionTag(cls := "settings-section", if collapsed then detailsTag(summaryTag(heading), rows) else heading +: rows)
 
-  private def row(name: Messages => String, wide: Boolean = false)(
-      content: Observer[Unit] => Modifier[HtmlElement]
-  ) =
+  private def row(name: Messages => String, wide: Boolean = false)(content: Field => Modifier[HtmlElement]) =
+    fields += 1
     val saved = EventBus[Unit]()
+    val field = Field(s"setting-$fields", saved.writer)
     val shown = saved.events
       .flatMapSwitch(_ => EventStream.merge(EventStream.fromValue(true), EventStream.delay(1500, false)))
       .startWith(false)
-    label(
+    div(
       cls := "row",
       Option.when(wide)(cls := "wide"),
       div(
         cls := "row-label",
-        span(text <-- t(name)),
-        span(cls := "saved", aria.live := "polite", cls("shown") <-- shown, text <-- t(_.saved))
+        label(forId := field.id, text <-- t(name)),
+        span(cls := "saved", aria.live := "polite", text <-- t(shown)((m, show) => if show then m.saved else ""))
       ),
-      div(cls := "row-control", content(saved.writer))
+      div(cls := "row-control", content(field))
     )
 
   private def staticRow(name: Messages => String)(content: Modifier[HtmlElement]*) = div(
@@ -145,12 +164,13 @@ object SettingsPage:
       label: E => Modifier[HtmlElement],
       current: Signal[String],
       save: E => Settings
-  )(saved: Observer[Unit]) = select(
+  )(field: Field) = select(
+    field.control,
     disabled <-- offline,
     values.map(e => option(value := key(e), label(e))),
     controlled(
       value <-- current,
-      onChange.mapToValue --> { k => values.find(key(_) == k).foreach(e => saveSettings(save(e), saved)) }
+      onChange.mapToValue --> { k => values.find(key(_) == k).foreach(e => field.save(save(e))) }
     )
   )
 
@@ -168,19 +188,21 @@ object SettingsPage:
       default: State => String,
       settings: String => Settings,
       code: Boolean = false
-  )(saved: Observer[Unit]): Modifier[HtmlElement] = Seq(
+  )(field: Field): Modifier[HtmlElement] = Seq(
     textArea(
+      field.control,
+      field.describedBy,
       Option.when(code)(cls := "code"),
       rows := 6,
       spellCheck := false,
       disabled <-- offline,
-      savedText(read, settings, saved)
+      field.text(read, settings.andThen(Some(_)))
     ),
-    div(cls := "hint", text <-- t(hint)),
+    div(field.hint, text <-- t(hint)),
     button(
       text <-- t(_.restoreDefault),
       disabled <-- state.map(_.forall(s => read(s) == default(s))),
-      onClick(_.sample(state)) --> { _.foreach(s => saveSettings(settings(default(s)), saved)) }
+      onClick(_.sample(state)) --> { _.foreach(s => field.save(settings(default(s)))) }
     )
   )
 

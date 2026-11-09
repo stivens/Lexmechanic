@@ -59,7 +59,8 @@ final class Servitor(initial: Config):
   def onKey(code: Int): Unit =
     val isHotkey = synchronized {
       if learning then
-        if EvdevKeys.bindable(code) then
+        if code == EvdevKeys.KeyEsc then learning = false
+        else if EvdevKeys.bindable(code) then
           learning = false
           error = failureOf(updateConfig(_.copy(hotkey = Some(code))))
         false

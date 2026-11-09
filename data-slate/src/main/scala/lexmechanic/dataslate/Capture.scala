@@ -14,6 +14,8 @@ object Capture:
 
   val usableHotkey: Signal[Option[Int]] = hotkey.map(_.filter(_.unavailable.isEmpty).flatMap(_.button))
 
+  val hotkeyProblem: Signal[Option[HotkeyProblem]] = hotkey.map(_.flatMap(_.unavailable))
+
   def regionText: Signal[String] = t(region)((m, region) => region.fold(m.regionNotSet)(m.regionSet))
 
   def calibrateButton = button(

@@ -129,9 +129,8 @@
   .row.wide { grid-template-columns: 1fr; }
   .row-label { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding-top: 12px; font: 500 13px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
   .row.wide .row-label { padding-top: 0; }
-  .saved { font: italic 15px "EB Garamond", Georgia, serif; letter-spacing: 0; text-transform: none; color: var(--green); opacity: 0; transition: opacity .3s; }
-  .saved.shown { opacity: 1; }
-  .saved::before { content: "✓ "; }
+  .saved { font: italic 15px "EB Garamond", Georgia, serif; letter-spacing: 0; text-transform: none; color: var(--green); }
+  .saved:not(:empty)::before { content: "✓ "; }
   .row-control { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
   .row-control > :is(input, select) { flex: 1 1 240px; max-width: 480px; }
   .row-control > input[type="number"] { flex: 0 1 140px; }
