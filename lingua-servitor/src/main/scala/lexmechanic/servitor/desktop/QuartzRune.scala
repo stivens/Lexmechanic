@@ -1,6 +1,6 @@
 package lexmechanic.servitor.desktop
 
-import lexmechanic.noosphere.{EvdevKeys, HotkeyProblem}
+import lexmechanic.noosphere.HotkeyProblem
 import lexmechanic.servitor.runtime.ServoSkull
 
 import scala.scalanative.unsafe.*
@@ -20,15 +20,14 @@ private[desktop] object QuartzRune:
   private val RetryMillis = 3000L
 
   // The callback is a C function pointer and cannot capture, so its state lives here.
-  @volatile private var handler: Int => Unit = _ => ()
-  @volatile private var tap: Ptr[Byte] = null
+  private var handler: Int => Unit = _ => ()
+  private var tap: Ptr[Byte] = null
 
   private val callback: Quartz.EventTapCallback = (_: Ptr[Byte], kind: UInt, event: Ptr[Byte], _: Ptr[Byte]) =>
     kind.toInt match
       case DisabledByTimeout | DisabledByUserInput => Quartz.CGEventTapEnable(tap, true)
       case OtherMouseDown                          =>
-        // macOS numbers mouse buttons from 0 (left) in evdev's order: BTN_LEFT, BTN_RIGHT, BTN_MIDDLE, BTN_SIDE...
-        handler(EvdevKeys.BtnLeft + Quartz.CGEventGetIntegerValueField(event, MouseButtonNumber).toInt)
+        handler(MacKeys.mouseButton(Quartz.CGEventGetIntegerValueField(event, MouseButtonNumber).toInt))
       case KeyDown if Quartz.CGEventGetIntegerValueField(event, KeyboardAutorepeat) == 0 =>
         MacKeys.toEvdev.get(Quartz.CGEventGetIntegerValueField(event, KeyboardKeycode).toInt).foreach(handler)
       case _ => ()

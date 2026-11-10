@@ -20,7 +20,6 @@ private[desktop] object EvdevRune:
   def listen(onPress: Int => Unit, onProblem: Option[HotkeyProblem] => Unit): Unit =
     val watched = ConcurrentHashMap.newKeySet[String]()
     ServoSkull.run("hotkey-scan") {
-      var reported = Option.empty[Option[HotkeyProblem]]
       while true do
         val devices = Option(File("/dev/input").listFiles()).toList.flatten.filter(_.getName.startsWith("event"))
         val (readable, unreadable) = devices.partition(_.canRead)
@@ -29,9 +28,7 @@ private[desktop] object EvdevRune:
           // Some devices (e.g. Steam's virtual gamepad) are readable without the input group, so check the unreadable ones.
           else if unreadable.exists(hasKeys) then Some(HotkeyProblem.NoPermission)
           else None
-        if !reported.contains(problem) then
-          onProblem(problem)
-          reported = Some(problem)
+        onProblem(problem)
         for device <- readable if !watched.contains(device.getName) && hasKeys(device) && watched.add(device.getName) do
           ServoSkull.run(s"hotkey-${device.getName}") {
             try watch(device, onPress)

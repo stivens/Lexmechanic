@@ -1,5 +1,7 @@
 package lexmechanic.servitor.desktop
 
+import lexmechanic.noosphere.EvdevKeys
+
 /** macOS virtual key codes (kVK_* in Carbon's Events.h) to Linux evdev codes. Modifiers never send key-down events. */
 private[desktop] object MacKeys:
   val toEvdev: Map[Int, Int] = Map(
@@ -56,7 +58,7 @@ private[desktop] object MacKeys:
     0x32 -> 41, // `
     0x33 -> 14, // Delete (backspace)
     0x35 -> 1, // Escape
-    0x40 -> 187, // F17
+    0x40 -> EvdevKeys.functionKey(17),
     0x41 -> 83, // Keypad .
     0x43 -> 55, // Keypad *
     0x45 -> 78, // Keypad +
@@ -64,8 +66,8 @@ private[desktop] object MacKeys:
     0x4b -> 98, // Keypad /
     0x4c -> 96, // Keypad Enter
     0x4e -> 74, // Keypad -
-    0x4f -> 188, // F18
-    0x50 -> 189, // F19
+    0x4f -> EvdevKeys.functionKey(18),
+    0x50 -> EvdevKeys.functionKey(19),
     0x51 -> 117, // Keypad =
     0x52 -> 82, // Keypad 0
     0x53 -> 79, // Keypad 1
@@ -75,33 +77,36 @@ private[desktop] object MacKeys:
     0x57 -> 76, // Keypad 5
     0x58 -> 77, // Keypad 6
     0x59 -> 71, // Keypad 7
-    0x5a -> 190, // F20
+    0x5a -> EvdevKeys.functionKey(20),
     0x5b -> 72, // Keypad 8
     0x5c -> 73, // Keypad 9
-    0x60 -> 63, // F5
-    0x61 -> 64, // F6
-    0x62 -> 65, // F7
-    0x63 -> 61, // F3
-    0x64 -> 66, // F8
-    0x65 -> 67, // F9
-    0x67 -> 87, // F11
-    0x69 -> 183, // F13
-    0x6a -> 186, // F16
-    0x6b -> 184, // F14
-    0x6d -> 68, // F10
-    0x6f -> 88, // F12
-    0x71 -> 185, // F15
+    0x60 -> EvdevKeys.functionKey(5),
+    0x61 -> EvdevKeys.functionKey(6),
+    0x62 -> EvdevKeys.functionKey(7),
+    0x63 -> EvdevKeys.functionKey(3),
+    0x64 -> EvdevKeys.functionKey(8),
+    0x65 -> EvdevKeys.functionKey(9),
+    0x67 -> EvdevKeys.functionKey(11),
+    0x69 -> EvdevKeys.functionKey(13),
+    0x6a -> EvdevKeys.functionKey(16),
+    0x6b -> EvdevKeys.functionKey(14),
+    0x6d -> EvdevKeys.functionKey(10),
+    0x6f -> EvdevKeys.functionKey(12),
+    0x71 -> EvdevKeys.functionKey(15),
     0x72 -> 138, // Help
     0x73 -> 102, // Home
     0x74 -> 104, // Page Up
     0x75 -> 111, // Forward Delete
-    0x76 -> 62, // F4
+    0x76 -> EvdevKeys.functionKey(4),
     0x77 -> 107, // End
-    0x78 -> 60, // F2
+    0x78 -> EvdevKeys.functionKey(2),
     0x79 -> 109, // Page Down
-    0x7a -> 59, // F1
+    0x7a -> EvdevKeys.functionKey(1),
     0x7b -> 105, // Left
     0x7c -> 106, // Right
     0x7d -> 108, // Down
     0x7e -> 103 // Up
   )
+
+  // macOS numbers mouse buttons from 0 (left) in evdev's order: BTN_LEFT, BTN_RIGHT, BTN_MIDDLE, BTN_SIDE...
+  def mouseButton(number: Int): Int = EvdevKeys.BtnLeft + number

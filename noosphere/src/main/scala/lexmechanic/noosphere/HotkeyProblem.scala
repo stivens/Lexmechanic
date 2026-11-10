@@ -5,7 +5,7 @@ import io.circe.Codec
 enum HotkeyProblem(val description: String):
   case NoDevices
       extends HotkeyProblem(
-        "no input devices found (evdev is Linux-only) - use Translate or `lexmechanic trigger`"
+        "no input devices found - use Translate or `lexmechanic trigger`"
       )
   case NoPermission
       extends HotkeyProblem(

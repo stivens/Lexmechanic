@@ -53,10 +53,18 @@ object Config:
   val file: Path = xdgDir("XDG_CONFIG_HOME", ".config").resolve("config.json")
   val cacheDir: Path = xdgDir("XDG_CACHE_HOME", ".cache")
 
+  // Before auto-detection, the first run saved this fixed default; leaving it stored would bypass detection for good.
+  private val legacyCaptureCommand =
+    List("spectacle", "--background", "--nonotify", "--fullscreen", "--output", "{file}")
+
+  def customCaptureCommand(command: List[String]): Option[List[String]] =
+    Some(command).filter(c => c != Pictcaptor.defaultCommand && c != legacyCaptureCommand)
+
   def load(): Config =
     if Files.exists(file) then
-      decode[Config](Files.readString(file))
+      val config = decode[Config](Files.readString(file))
         .fold(e => throw RuntimeException(s"Invalid $file: ${e.getMessage}"), identity)
+      config.copy(captureCommand = config.captureCommand.flatMap(customCaptureCommand))
     else
       val config = Config()
       save(config)

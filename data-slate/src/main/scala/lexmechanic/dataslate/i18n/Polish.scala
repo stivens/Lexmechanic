@@ -50,7 +50,7 @@ object Polish extends Messages:
   val noHotkey = "Brak"
   def hotkeyUnavailable(problem: HotkeyProblem) = problem match
     case HotkeyProblem.NoDevices =>
-      "Skrót niedostępny: nie znaleziono urządzeń wejściowych (evdev działa tylko na Linuksie) – użyj przycisku Tłumacz lub `lexmechanic trigger`."
+      "Skrót niedostępny: nie znaleziono urządzeń wejściowych – użyj przycisku Tłumacz lub `lexmechanic trigger`."
     case HotkeyProblem.NoPermission =>
       "Skrót niedostępny: brak dostępu do urządzeń z przyciskami – uruchom `sudo usermod -aG input $USER` i zaloguj się ponownie."
     case HotkeyProblem.NoInputMonitoring =>

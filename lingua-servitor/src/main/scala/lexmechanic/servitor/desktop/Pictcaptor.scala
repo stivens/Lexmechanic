@@ -18,16 +18,13 @@ object Pictcaptor:
     List("import", "-window", "root", "{file}")
   )
 
-  lazy val defaultCommand: List[String] =
+  val defaultCommand: List[String] =
     if LinktimeInfo.isMac then List("screencapture", "-x", "-t", "png", "{file}")
-    else linuxCommands.find(command => installed(command.head)).getOrElse(linuxCommands.head)
-
-  private def installed(program: String): Boolean =
-    sys.env
-      .get("PATH")
-      .toList
-      .flatMap(_.split(File.pathSeparator))
-      .exists(dir => Files.isExecutable(Paths.get(dir, program)))
+    else
+      val path = sys.env.get("PATH").toList.flatMap(_.split(File.pathSeparator))
+      linuxCommands
+        .find(command => path.exists(dir => Files.isExecutable(Paths.get(dir, command.head))))
+        .getOrElse(linuxCommands.head)
 
   // Translation and calibration can both capture at once; screenshot tools are not built to run concurrently.
   def fullScreen(command: List[String], target: Path): Path = synchronized {

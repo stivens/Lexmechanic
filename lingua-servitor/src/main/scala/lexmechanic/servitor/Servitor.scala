@@ -169,8 +169,7 @@ final class Servitor(initial: Config):
                 instructions =
                   settings.instructions.fold(c.instructions)(i => Option(i.trim).filter(_ != Instructions.default)),
                 port = settings.port.getOrElse(c.port),
-                captureCommand =
-                  settings.captureCommand.fold(c.captureCommand)(Some(_).filter(_ != Pictcaptor.defaultCommand)),
+                captureCommand = settings.captureCommand.fold(c.captureCommand)(Config.customCaptureCommand),
                 openCommand = settings.openCommand.getOrElse(c.openCommand)
               )
             )
