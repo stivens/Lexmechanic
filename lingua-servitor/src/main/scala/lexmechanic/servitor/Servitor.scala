@@ -47,8 +47,8 @@ final class Servitor(initial: Config):
       captain = config.captain,
       port = config.port,
       restartRequired = config.port != initial.port,
-      captureCommand = config.captureCommand,
-      defaultCaptureCommand = Config.defaultCaptureCommand,
+      captureCommand = config.activeCaptureCommand,
+      defaultCaptureCommand = Pictcaptor.defaultCommand,
       openCommand = config.openCommand,
       defaultOpenCommand = Config.defaultOpenCommand
     )
@@ -94,7 +94,7 @@ final class Servitor(initial: Config):
     val current = synchronized(config)
     val mandate = current.mandate
     val dialogue = Using.resource(current.voxLink.fold(e => throw RuntimeException(e), identity)) { link =>
-      val screenshot = Pictcaptor.fullScreen(current.captureCommand, translationShot)
+      val screenshot = Pictcaptor.fullScreen(current.activeCaptureCommand, translationShot)
       Xenolinguist(link).translate(Png.read(screenshot, current.region), mandate)
     }
     synchronized {
@@ -134,7 +134,7 @@ final class Servitor(initial: Config):
     case ("POST", "/capture")   => currentState(if trigger() then 200 else 409)
     case ("POST", "/calibrate") =>
       act {
-        Pictcaptor.fullScreen(synchronized(config).captureCommand, calibrationShot)
+        Pictcaptor.fullScreen(synchronized(config).activeCaptureCommand, calibrationShot)
         None
       }
     case ("POST", "/region") =>
@@ -172,7 +172,7 @@ final class Servitor(initial: Config):
                 instructions =
                   settings.instructions.fold(c.instructions)(i => Option(i.trim).filter(_ != Instructions.default)),
                 port = settings.port.getOrElse(c.port),
-                captureCommand = settings.captureCommand.getOrElse(c.captureCommand),
+                captureCommand = settings.captureCommand.fold(c.captureCommand)(Config.customCaptureCommand),
                 openCommand = settings.openCommand.getOrElse(c.openCommand)
               )
             )

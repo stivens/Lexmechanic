@@ -65,9 +65,11 @@ object Silesian extends Messages:
   val noHotkey = "Żŏdyn"
   def hotkeyUnavailable(problem: HotkeyProblem) = problem match
     case HotkeyProblem.NoDevices =>
-      "Skrōt niydostympny: niy szło znojś żŏdnych urzōndzyń wejściowych (evdev działŏ ino na Linuksie) – użyj knefla Przełōż abo `lexmechanic trigger`."
+      "Skrōt niydostympny: niy szło znojś żŏdnych urzōndzyń wejściowych – użyj knefla Przełōż abo `lexmechanic trigger`."
     case HotkeyProblem.NoPermission =>
       "Skrōt niydostympny: niy ma dostympu do urzōndzyń z kneflami – puść `sudo usermod -aG input $USER` i zaloguj sie zaś."
+    case HotkeyProblem.NoInputMonitoring =>
+      "Skrōt niydostympny: dej Lexmechanikowi (abo terminalowi, w kerym łazi) zgoda na Monitorowanie wprowadzania w Ustawieniach systymowych > Prywatność i ochrona, a potym puść go zaś."
 
   val setupTitle = "Rychtowanie"
   val setupKey = "Klucz dostawcy AI"

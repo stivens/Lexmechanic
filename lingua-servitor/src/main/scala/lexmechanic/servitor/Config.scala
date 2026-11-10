@@ -4,6 +4,7 @@ import io.circe.derivation.ConfiguredCodec
 import io.circe.parser.decode
 import io.circe.syntax.*
 import lexmechanic.noosphere.{*, given}
+import lexmechanic.servitor.desktop.Pictcaptor
 import lexmechanic.servitor.translation.{Mandate, VoxLink}
 
 import java.nio.file.{Files, Path, Paths}
@@ -20,7 +21,7 @@ final case class Config(
     captain: Gender = Gender.Male,
     instructions: Option[String] = None,
     port: Int = 7040,
-    captureCommand: List[String] = Config.defaultCaptureCommand,
+    captureCommand: Option[List[String]] = None,
     openCommand: List[String] = Config.defaultOpenCommand,
     region: Option[Region] = None,
     hotkey: Option[Int] = Some(EvdevKeys.BtnExtra)
@@ -29,6 +30,8 @@ final case class Config(
   def targetLanguage: Language = language.getOrElse(Language.fallback)
 
   def activeInstructions: String = instructions.getOrElse(Instructions.default)
+
+  def activeCaptureCommand: List[String] = captureCommand.getOrElse(Pictcaptor.defaultCommand)
 
   def mandate: Mandate = Mandate(game, targetLanguage, captain, activeInstructions)
 
@@ -51,10 +54,6 @@ final case class Config(
 object Config:
   def nonBlank(text: String): Option[String] = Option(text.trim).filter(_.nonEmpty)
 
-  val defaultCaptureCommand: List[String] =
-    if LinktimeInfo.isMac then List("screencapture", "-x", "-t", "png", "{file}")
-    else List("spectacle", "--background", "--nonotify", "--fullscreen", "--output", "{file}")
-
   val defaultOpenCommand: List[String] = List(if LinktimeInfo.isMac then "open" else "xdg-open", "{url}")
 
   private def xdgDir(variable: String, fallback: String): Path =
@@ -63,10 +62,18 @@ object Config:
   val file: Path = xdgDir("XDG_CONFIG_HOME", ".config").resolve("config.json")
   val cacheDir: Path = xdgDir("XDG_CACHE_HOME", ".cache")
 
+  // Before auto-detection, the first run saved this fixed default; leaving it stored would bypass detection for good.
+  private val legacyCaptureCommand =
+    List("spectacle", "--background", "--nonotify", "--fullscreen", "--output", "{file}")
+
+  def customCaptureCommand(command: List[String]): Option[List[String]] =
+    Some(command).filter(c => c != Pictcaptor.defaultCommand && c != legacyCaptureCommand)
+
   def load(): Config =
     if Files.exists(file) then
-      decode[Config](Files.readString(file))
+      val config = decode[Config](Files.readString(file))
         .fold(e => throw RuntimeException(s"Invalid $file: ${e.getMessage}"), identity)
+      config.copy(captureCommand = config.captureCommand.flatMap(customCaptureCommand))
     else
       val config = Config()
       save(config)
