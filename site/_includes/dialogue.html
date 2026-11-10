@@ -1,0 +1,9 @@
+{% assign t = include.scene.translations[include.lang] %}
+<div class="dialogue" lang="{{ include.lang }}">
+  {% for p in t.text %}
+  <p>{% if forloop.first %}<span class="speaker">{{ include.scene.speaker | escape }}:</span> {% endif %}{{ p | escape }}</p>
+  {% endfor %}
+  <ol class="choices">
+    {% for c in t.choices %}<li>{{ c | escape }}</li>{% endfor %}
+  </ol>
+</div>

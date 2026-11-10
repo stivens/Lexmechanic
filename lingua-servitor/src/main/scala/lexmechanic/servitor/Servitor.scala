@@ -10,9 +10,9 @@ import lexmechanic.servitor.runtime.{Log, ServoSkull, failureOf, reason}
 import lexmechanic.servitor.translation.Xenolinguist
 
 import java.nio.file.Files
-import scala.util.Try
+import scala.util.{Try, Using}
 
-final class Servitor(xenolinguist: Xenolinguist, initial: Config):
+final class Servitor(initial: Config):
   private val translationShot = Config.cacheDir.resolve("translation.png")
   private val calibrationShot = Config.cacheDir.resolve("calibration.png")
   private val trustedHosts = Set(s"127.0.0.1:${initial.port}", s"localhost:${initial.port}")
@@ -28,15 +28,25 @@ final class Servitor(xenolinguist: Xenolinguist, initial: Config):
 
   private def state: State = synchronized {
     State(
-      busy,
-      error,
-      config.region,
-      config.game,
-      config.language,
-      config.interfaceLanguage,
-      config.activeInstructions,
-      HotkeyState(config.hotkey, learning, hotkeyUnavailable),
-      history
+      busy = busy,
+      error = error.orElse(config.apiKey.left.toOption),
+      region = config.region,
+      game = config.game,
+      language = config.language,
+      interfaceLanguage = config.interfaceLanguage,
+      instructions = config.activeInstructions,
+      hotkey = HotkeyState(config.hotkey, learning, hotkeyUnavailable),
+      history = history,
+      provider = config.provider,
+      model = config.model,
+      apiKey = config.storedKey,
+      captain = config.captain,
+      port = config.port,
+      restartRequired = config.port != initial.port,
+      captureCommand = config.activeCaptureCommand,
+      defaultCaptureCommand = Pictcaptor.defaultCommand,
+      openCommand = config.openCommand,
+      defaultOpenCommand = Config.defaultOpenCommand
     )
   }
 
@@ -77,9 +87,11 @@ final class Servitor(xenolinguist: Xenolinguist, initial: Config):
 
   private def translateScreen(): Unit =
     val current = synchronized(config)
-    val screenshot = Pictcaptor.fullScreen(current.activeCaptureCommand, translationShot)
     val mandate = current.mandate
-    val dialogue = xenolinguist.translate(Png.read(screenshot, current.region), mandate)
+    val dialogue = Using.resource(current.voxLink.fold(e => throw RuntimeException(e), identity)) { link =>
+      val screenshot = Pictcaptor.fullScreen(current.activeCaptureCommand, translationShot)
+      Xenolinguist(link).translate(Png.read(screenshot, current.region), mandate)
+    }
     synchronized {
       history = (Entry(nextEntryId, dialogue, mandate.language) :: history).take(50)
       nextEntryId += 1
@@ -110,6 +122,8 @@ final class Servitor(xenolinguist: Xenolinguist, initial: Config):
     synchronized { error = failure.map(_._2) }
     currentState(failure.fold(200)(_._1))
 
+  private def nonBlank(text: String): Option[String] = Option(text.trim).filter(_.nonEmpty)
+
   private def endpoint(request: Request): Response = (request.method, request.path) match
     case ("GET", "/state")                                       => currentState()
     case ("GET", "/screenshot") if Files.exists(calibrationShot) =>
@@ -131,15 +145,33 @@ final class Servitor(xenolinguist: Xenolinguist, initial: Config):
     case ("POST", "/settings") =>
       act {
         decode[Settings](request.bodyText) match
+          case Right(settings) if settings.captureCommand.exists(!_.exists(_.contains("{file}"))) =>
+            Some(400 -> "The screenshot command must contain {file}")
+          case Right(settings) if settings.port.exists(p => p < 1 || p > 65535) =>
+            Some(400 -> "The port must be between 1 and 65535")
           case Right(settings) =>
             updateConfig(c =>
+              val provider = settings.provider.getOrElse(c.provider)
+              // A model name belongs to one provider.
+              val keptModel = if provider == c.provider then c.model else None
               c.copy(
+                provider = provider,
+                model = settings.model.map(nonBlank).getOrElse(keptModel),
+                apiKeys = settings.apiKey.map(nonBlank).fold(c.apiKeys) {
+                  case Some(key) => c.apiKeys.updated(provider.keyVariable, key)
+                  case None      => c.apiKeys - provider.keyVariable
+                },
                 game = settings.game.fold(c.game)(_.trim),
                 language = settings.language.orElse(c.language),
                 interfaceLanguage = settings.interfaceLanguage.orElse(c.interfaceLanguage),
+                captain = settings.captain.getOrElse(c.captain),
                 // Text matching the default is stored as unset, so later changes to the default still reach it.
                 instructions =
-                  settings.instructions.fold(c.instructions)(i => Option(i.trim).filter(_ != Instructions.default))
+                  settings.instructions.fold(c.instructions)(i => Option(i.trim).filter(_ != Instructions.default)),
+                port = settings.port.getOrElse(c.port),
+                captureCommand =
+                  settings.captureCommand.fold(c.captureCommand)(Some(_).filter(_ != Pictcaptor.defaultCommand)),
+                openCommand = settings.openCommand.getOrElse(c.openCommand)
               )
             )
             None

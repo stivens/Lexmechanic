@@ -1,0 +1,24 @@
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="{{ site.logo | relative_url }}" alt="" width="48" height="48">
+      <div>
+        <strong>{{ site.title }}</strong>
+        <p>{{ site.tagline }}.</p>
+      </div>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="{% link docs/index.md %}">Docs</a>
+      <a href="{% link examples.html %}">Examples</a>
+      <a href="{{ site.repo_url }}">Source code</a>
+      <a href="{{ site.repo_url }}/releases">Releases</a>
+      <a href="{{ site.repo_url }}/issues">Report an issue</a>
+      <a href="{{ site.repo_url }}/blob/main/LICENSE">License</a>
+    </nav>
+    <p class="disclaimer">
+      Free for noncommercial use under the PolyForm Noncommercial License 1.0.0.
+      Lexmechanic is an unofficial fan project, not affiliated with or endorsed by Owlcat Games or Games Workshop.
+      Warhammer 40,000 is a trademark of Games Workshop Limited.
+    </p>
+  </div>
+</footer>

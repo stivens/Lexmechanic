@@ -1,7 +1,6 @@
-package lexmechanic.servitor.translation
+package lexmechanic.noosphere
 
 import io.circe.Codec
-import lexmechanic.noosphere.nameCodec
 
 enum Gender:
   case Male, Female

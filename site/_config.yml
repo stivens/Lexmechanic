@@ -1,0 +1,34 @@
+title: Lexmechanic
+tagline: Translates game dialogue into your language
+description: >-
+  Press a shortcut during a conversation in a game. Lexmechanic cuts out the dialogue window, has an AI model
+  translate it and shows it in your language. No mods, so it works with GeForce NOW and on the Steam Deck.
+lang: en
+permalink: pretty
+url: https://stivens.github.io
+baseurl: /Lexmechanic
+logo: /assets/img/emblem.svg
+
+repo_url: https://github.com/stivens/Lexmechanic
+download_url: https://github.com/stivens/Lexmechanic/releases/latest/download/lexmechanic-linux-x86_64.tar.gz
+
+sass:
+  style: compressed
+  sourcemap: never
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+exclude:
+  - README.md
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      image: /assets/img/og.jpg
+  - scope:
+      path: docs
+    values:
+      layout: doc

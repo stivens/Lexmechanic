@@ -20,7 +20,7 @@ object App:
   private val postAnswered = EventBus[Unit]()
   private val showOriginal = WebStorageVar.localStorage("lexmechanic.original", syncOwner = None).bool(default = true)
 
-  private val state: Signal[Option[State]] = server.signal.distinct
+  private[dataslate] val state: Signal[Option[State]] = server.signal.distinct
 
   private val hotkey: Signal[Option[HotkeyState]] = state.map(_.map(_.hotkey)).distinct
 
@@ -31,7 +31,7 @@ object App:
     case _                                             => ServitorStatus.Ready
   }
 
-  private val offline = state.map(_.isEmpty)
+  private[dataslate] val offline = state.map(_.isEmpty)
 
   private val actionsDisabled = status.map(s => s == ServitorStatus.Busy || s == ServitorStatus.Offline)
 
@@ -66,11 +66,11 @@ object App:
       )
     )
 
-  private def saveSettings(settings: Settings): Future[Boolean] = post("/settings", settings.asJson.noSpaces)
+  private[dataslate] def saveSettings(settings: Settings): Future[Boolean] = post("/settings", settings.asJson.noSpaces)
 
   // Polls must not clobber unsaved typing, nor a failed poll blank it; a save re-sets it even when the
   // server's normalized value equals the previous one.
-  private def savedText(read: State => String, settings: String => Settings) =
+  private[dataslate] def savedText(read: State => String, settings: String => Settings) =
     val saved = EventBus[String]()
     Seq(
       value <-- EventStream.merge(state.changes.collectSome.map(read).distinct, saved.events),
@@ -93,6 +93,7 @@ object App:
     I18n.messages --> { m => dom.document.documentElement.setAttribute("lang", m.lang) },
     header,
     settings,
+    Advanced.panel,
     instructionsEditor,
     mainView,
     Calibration.overlay(state.map(_.flatMap(_.region))),
@@ -129,14 +130,14 @@ object App:
       text <-- t(_.translate),
       disabled <-- actionsDisabled,
       onClick --> { _ => post("/capture") }
-    )
+    ),
+    Advanced.toggle
   )
 
   private def settings = div(
     cls := "settings",
-    label(
-      cls := "field game",
-      span(cls := "field-label", text <-- t(_.game)),
+    field(
+      _.game,
       input(
         typ := "text",
         spellCheck := false,
@@ -144,10 +145,9 @@ object App:
         disabled <-- offline,
         savedText(_.game, game => Settings(game = Some(game)))
       )
-    ),
-    label(
-      cls := "field",
-      span(cls := "field-label", text <-- t(_.translateInto)),
+    ).amend(cls := "game"),
+    field(
+      _.translateInto,
       select(
         disabled <-- offline,
         Language.all.map(l => option(value := l.code, text <-- t(_.languageLabel(l)))),
@@ -174,9 +174,8 @@ object App:
         onClick(_.sample(hotkey)) --> { h => post(if h.exists(_.learning) then "/hotkey/cancel" else "/hotkey/learn") }
       )
     ),
-    label(
-      cls := "field",
-      span(cls := "field-label", text <-- t(_.interfaceLanguage)),
+    field(
+      _.interfaceLanguage,
       select(
         disabled <-- offline,
         Messages.all.map(m => option(value := m.lang, m.name)),
@@ -191,6 +190,12 @@ object App:
       aria.expanded <-- instructionsOpen.signal,
       onClick --> { _ => instructionsOpen.update(!_) }
     )
+  )
+
+  private[dataslate] def field(name: Messages => String, control: HtmlElement) = label(
+    cls := "field",
+    span(cls := "field-label", text <-- t(name)),
+    control
   )
 
   private def instructionsEditor = div(

@@ -1,6 +1,6 @@
 package lexmechanic.dataslate.i18n
 
-import lexmechanic.noosphere.HotkeyProblem
+import lexmechanic.noosphere.{Gender, HotkeyProblem}
 
 object Polish extends Messages:
   val name = "Polski"
@@ -28,6 +28,24 @@ object Polish extends Messages:
   val instructionsHint =
     "Dodatkowe wskazówki dla Plugawej Inteligencji, zapisywane po wyjściu z pola. Gra, język docelowy i format odpowiedzi są dodawane zawsze."
   val restoreDefault = "Przywróć domyślne"
+
+  val advanced = "Ustawienia zaawansowane"
+  val advancedHint = "Każde pole jest zapisywane po wyjściu z niego."
+  val provider = "Dostawca AI"
+  val model = "Model"
+  val apiKey = "Klucz API"
+  def apiKeyFallback(variable: String) = s"lub ustaw $variable"
+  val captain = "Postać gracza"
+  def gender(gender: Gender) = gender match
+    case Gender.Male   => "Mężczyzna"
+    case Gender.Female => "Kobieta"
+  val port = "Port"
+  val portRestart = "Nowy port zacznie działać po ponownym uruchomieniu demona."
+  val captureCommand = "Polecenie zrzutu ekranu"
+  val captureCommandHint = "Jeden argument w wierszu; {file} jest zastępowane ścieżką, pod którą ma trafić zrzut."
+  val openCommand = "Otwieraj interfejs przez"
+  val openCommandHint =
+    "Jeden argument w wierszu; {url} jest zastępowane adresem tej strony. Zostaw puste, aby niczego nie otwierać."
   val pressAButton = "Naciśnij przycisk…"
   val noHotkey = "Brak"
   def hotkeyUnavailable(problem: HotkeyProblem) = problem match

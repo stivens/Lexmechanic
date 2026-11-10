@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    # The binary needs the glibc it was linked against or newer, so build on an old one.
+    # README and site/docs/install.md state the resulting minimum glibc.
+    container: ubuntu:22.04
+    env:
+      ASSET: lexmechanic-linux-x86_64.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches the build version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: grep -qF "version := \"${GITHUB_REF_NAME#v}\"" build.sbt
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl unzip clang libcurl4-openssl-dev libidn2-dev zlib1g-dev
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: sbt/setup-sbt@v1
+
+      # sbt 2's default thin client times out while a cold server is still downloading dependencies.
+      - name: Build
+        run: sbt --server --batch release
+
+      - name: Package
+        run: |
+          install -Dm755 -s target/lexmechanic dist/bin/lexmechanic
+          install -Dm644 art/emblem.svg dist/share/icons/lexmechanic.svg
+          install -Dm644 LICENSE dist/share/doc/lexmechanic/LICENSE
+          tar -czf "$ASSET" -C dist bin share
+
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ASSET }}
+          path: ${{ env.ASSET }}
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ASSET }}
+          generate_release_notes: true

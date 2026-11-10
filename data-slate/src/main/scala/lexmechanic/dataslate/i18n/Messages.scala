@@ -38,6 +38,21 @@ trait Messages:
   val instructionsHint: String
   val restoreDefault: String
 
+  val advanced: String
+  val advancedHint: String
+  val provider: String
+  val model: String
+  val apiKey: String
+  def apiKeyFallback(variable: String): String
+  val captain: String
+  def gender(gender: Gender): String
+  val port: String
+  val portRestart: String
+  val captureCommand: String
+  val captureCommandHint: String
+  val openCommand: String
+  val openCommandHint: String
+
   val noRegion: String
   val emptyHistory: String
   val earlier: String

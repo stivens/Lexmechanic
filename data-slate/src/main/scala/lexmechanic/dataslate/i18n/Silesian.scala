@@ -1,6 +1,6 @@
 package lexmechanic.dataslate.i18n
 
-import lexmechanic.noosphere.HotkeyProblem
+import lexmechanic.noosphere.{Gender, HotkeyProblem}
 
 object Silesian extends Messages:
   val name = "Ślōnsko godka"
@@ -29,6 +29,24 @@ object Silesian extends Messages:
   val instructionsHint =
     "Dodatkowe wskazōwki dlŏ Plugawyj Inteligyncyje, spamiyntywane, jak wyjdziesz z pola. Szpil, docelowy jynzyk i format ôdpowiedzi sōm zawdy przidŏwane."
   val restoreDefault = "Prziwrōć wychodne"
+
+  val advanced = "Zaawansowane ustawiynia"
+  val advancedHint = "Kożde pole je spamiyntywane, jak z niego wyjdziesz."
+  val provider = "Dostawca AI"
+  val model = "Model"
+  val apiKey = "Klucz API"
+  def apiKeyFallback(variable: String) = s"abo ustŏw $variable"
+  val captain = "Postać graczŏ"
+  def gender(gender: Gender) = gender match
+    case Gender.Male   => "Chop"
+    case Gender.Female => "Baba"
+  val port = "Port"
+  val portRestart = "Nowy port zacznie działać, jak zaś puścisz dymōna."
+  val captureCommand = "Polecynie zrzutu ekranu"
+  val captureCommandHint = "Jedyn argumynt na wiersz; {file} je zastympowane drōgōm, kaj mŏ trefić zrzut."
+  val openCommand = "Ôtwiyrej aplikacyjõ bez"
+  val openCommandHint =
+    "Jedyn argumynt na wiersz; {url} je zastympowane adresym tyj strōny. Ôstŏw prōzne, coby nic niy ôtwiyrać."
   val pressAButton = "Naciś knefel…"
   val noHotkey = "Żŏdyn"
   def hotkeyUnavailable(problem: HotkeyProblem) = problem match

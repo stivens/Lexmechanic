@@ -46,17 +46,26 @@
   .switch[aria-checked="true"] .track { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 25%, transparent); }
   .switch[aria-checked="true"] .track::after { transform: translateX(16px); background: var(--brass); }
   button[aria-expanded="true"] { border-color: var(--brass); }
+  button.icon { display: flex; padding: 7px; }
+  button.icon svg { width: 20px; height: 20px; fill: currentColor; }
   button[data-learning="true"] { border-color: var(--brass); animation: pulse 1s ease-in-out infinite; }
 
-  header, .settings, .prompt-editor { border-bottom: 1px solid var(--line); background: var(--panel); }
-  header, .settings { display: flex; align-items: center; }
+  header, .settings, .prompt-editor, .advanced { border-bottom: 1px solid var(--line); background: var(--panel); }
+  header, .settings, .advanced-fields { display: flex; align-items: center; }
   header { gap: 12px; padding: 10px 16px; }
-  .settings { flex-wrap: wrap; gap: 10px 24px; padding: 8px 16px; }
-  .prompt-editor { display: none; flex-direction: column; gap: 8px; padding: 10px 16px; }
-  .prompt-editor.open { display: flex; }
-  .prompt-editor .hint { font-size: 15px; margin: 0; }
-  .prompt-editor textarea { resize: vertical; line-height: 1.4; }
-  .prompt-editor button { align-self: flex-end; }
+  .settings, .advanced-fields { flex-wrap: wrap; gap: 10px 24px; }
+  .settings { padding: 8px 16px; }
+  .prompt-editor, .advanced { display: none; flex-direction: column; padding: 10px 16px; }
+  .prompt-editor { gap: 8px; }
+  .advanced { gap: 12px; }
+  :is(.prompt-editor, .advanced).open { display: flex; }
+  :is(.prompt-editor, .advanced) .hint { font-size: 15px; margin: 0; }
+  :is(.prompt-editor, .advanced) textarea { resize: vertical; line-height: 1.4; }
+  :is(.prompt-editor, .command) button { align-self: flex-end; }
+  .advanced input[type="number"] { width: 110px; }
+  .commands { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px 24px; }
+  .command, .command label { display: flex; flex-direction: column; gap: 6px; }
+  .command textarea { font: 15px/1.4 ui-monospace, Menlo, monospace; }
   .field { display: flex; align-items: center; gap: 10px; }
   .field.game { flex: 1 1 280px; }
   .field.game input { flex: 1; }

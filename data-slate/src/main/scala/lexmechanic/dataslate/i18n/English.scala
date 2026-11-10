@@ -1,6 +1,6 @@
 package lexmechanic.dataslate.i18n
 
-import lexmechanic.noosphere.HotkeyProblem
+import lexmechanic.noosphere.{Gender, HotkeyProblem}
 
 object English extends Messages:
   val name = "English"
@@ -30,6 +30,24 @@ object English extends Messages:
   val instructionsHint =
     "Extra guidance for the Abominable Intelligence, saved when you leave the box. The game, target language and answer format are always added."
   val restoreDefault = "Restore default"
+
+  val advanced = "Advanced settings"
+  val advancedHint = "Each field is saved when you leave it."
+  val provider = "AI provider"
+  val model = "Model"
+  val apiKey = "API key"
+  def apiKeyFallback(variable: String) = s"or set $variable"
+  val captain = "Player character"
+  def gender(gender: Gender) = gender match
+    case Gender.Male   => "Male"
+    case Gender.Female => "Female"
+  val port = "Port"
+  val portRestart = "The new port takes effect after the daemon restarts."
+  val captureCommand = "Screenshot command"
+  val captureCommandHint = "One argument per line; {file} is replaced with the path to save the screenshot to."
+  val openCommand = "Open the UI with"
+  val openCommandHint =
+    "One argument per line; {url} is replaced with this page's address. Leave empty to open nothing."
 
   val noRegion = "No region calibrated yet - the whole screen is sent. Use Calibrate to select the dialogue window."
   val emptyHistory = "Press the hotkey while a dialogue is on screen."

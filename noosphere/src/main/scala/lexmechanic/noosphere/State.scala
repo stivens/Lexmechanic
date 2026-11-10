@@ -11,5 +11,15 @@ final case class State(
     interfaceLanguage: Option[String],
     instructions: String,
     hotkey: HotkeyState,
-    history: List[Entry]
+    history: List[Entry],
+    provider: Heretek,
+    model: Option[String],
+    apiKey: Option[String],
+    captain: Gender,
+    port: Int,
+    restartRequired: Boolean,
+    captureCommand: List[String],
+    defaultCaptureCommand: List[String],
+    openCommand: List[String],
+    defaultOpenCommand: List[String]
 ) derives Codec.AsObject
