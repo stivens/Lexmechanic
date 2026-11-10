@@ -1,6 +1,6 @@
 val scala3 = "3.9.0"
 
-ThisBuild / version := "0.2.0"
+ThisBuild / version := "0.3.0"
 ThisBuild / scalaVersion := scala3
 ThisBuild / scalacOptions ++= Seq("-deprecation", "-Wunused:all")
 ThisBuild / semanticdbEnabled := true
