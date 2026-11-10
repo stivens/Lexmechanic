@@ -22,7 +22,6 @@ trait Messages:
   val offlineBanner: String
   val dismiss: String
 
-  val original: String
   val translate: String
   val settings: String
   val back: String
@@ -31,9 +30,10 @@ trait Messages:
   val anyGame: String
   val translateInto: String
   val interfaceLanguage: String
+  val uiLanguage: String
   val hotkey: String
   val change: String
-  val pressAButton: String
+  def pressAButton(seconds: Int): String
   val noHotkey: String
   def hotkeyUnavailable(problem: HotkeyProblem): String
   val instructions: String

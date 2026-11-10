@@ -30,7 +30,7 @@ object Reading:
     ol(
       step(
         _.setupKey,
-        state.map(_.exists(SettingsPage.hasKey)),
+        state.map(_.exists(_.apiKeySource != KeySource.Missing)),
         t(state)((m, current) => current.fold("")(s => SettingsPage.keyStatus(m, s).getOrElse(s.provider.toString))),
         button(text <-- t(_.openSettings), onClick --> { _ => SettingsPage.openAi() })
       ),
@@ -55,23 +55,12 @@ object Reading:
 
   private def renderEntry(entry: Entry) =
     val dialogue = entry.dialogue
-    val translationLang = lang := entry.language.code
-    // The source language is detected by the model and not reported, so it is marked unknown.
-    val originalLang = lang := ""
     articleTag(
       cls := "entry",
+      lang := entry.language.code,
       dialogue.speaker.map(div(cls := "speaker", _)),
-      p(cls := "translation", translationLang, dialogue.text.translation),
-      p(cls := "original", originalLang, dialogue.text.original),
+      p(cls := "translation", dialogue.text.translation),
       Option.when(dialogue.answers.nonEmpty)(
-        ol(
-          cls := "answers",
-          dialogue.answers.map(a =>
-            li(
-              div(cls := "translation", translationLang, a.translation),
-              div(cls := "original", originalLang, a.original)
-            )
-          )
-        )
+        ol(cls := "answers", dialogue.answers.map(a => li(a.translation)))
       )
     )

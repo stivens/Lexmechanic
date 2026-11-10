@@ -1,6 +1,5 @@
 package lexmechanic.dataslate
 
-import com.raquo.airstream.web.WebStorageVar
 import com.raquo.laminar.api.L.*
 import io.circe.parser.decode
 import io.circe.syntax.*
@@ -18,7 +17,6 @@ object App:
   private val pending = Var(0)
   private val settingsOpen = Var(false)
   private val postAnswered = EventBus[Unit]()
-  private val showOriginal = WebStorageVar.localStorage("lexmechanic.original", syncOwner = None).bool(default = true)
 
   private[dataslate] val state: Signal[Option[State]] = server.signal.distinct
 
@@ -89,24 +87,24 @@ object App:
   private[dataslate] def openSettings(): Unit = settingsOpen.set(true)
 
   private def closeSettings(): Unit = if settingsOpen.now() then
-    // A hidden field loses focus without a change event in some browsers, which would drop the edit.
-    dom.document.activeElement match
-      case focused: dom.HTMLElement => focused.blur()
-      case _                        => ()
-    settingsOpen.set(false)
+    // The reading view may not show that learning is on, so the next key pressed in the game would become the hotkey.
+    if learning then post("/hotkey/cancel")
+    // Focus moves before hiding: a field hidden while focused may skip its change event and drop the edit.
     cog.ref.focus()
+    settingsOpen.set(false)
 
   private def onEscape(): Unit =
     if Calibration.isOpen then Calibration.close()
-    // The daemon sees the same key press and cancels learning itself.
-    else if !server.now().exists(_.hotkey.learning) then closeSettings()
+    else if learning then post("/hotkey/cancel")
+    else closeSettings()
+
+  private def learning = server.now().exists(_.hotkey.learning)
 
   def main(args: Array[String]): Unit =
     renderOnDomContentLoaded(dom.document.getElementById("app"), view)
 
   private def view = div(
     cls := "shell",
-    cls("show-original") <-- showOriginal.signal,
     polling --> server.writer,
     state.changes.collectSome.map(_.interfaceLanguage).collectSome.distinct --> I18n.language.writer,
     state.changes.collectSome
@@ -142,14 +140,11 @@ object App:
       span(cls := "dot"),
       span(cls := "status-label", text <-- t(status)((m, s) => s.label(m)))
     ),
-    button(
-      cls := "switch",
-      role := "switch",
+    div(
+      cls := "pickers",
       hidden <-- settingsOpen.signal,
-      aria.checked <-- showOriginal.signal.map(_.toString),
-      span(cls := "track"),
-      span(text <-- t(_.original)),
-      onClick --> { _ => showOriginal.update(!_) }
+      picker(_.translateInto, Pickers.targetLanguage(saveSettings)),
+      picker(_.uiLanguage, Pickers.interfaceLanguage(saveSettings))
     ),
     button(
       cls := "primary",
@@ -159,6 +154,9 @@ object App:
     ),
     cog
   )
+
+  private def picker(caption: Messages => String, control: HtmlElement) =
+    label(cls := "picker", span(cls := "picker-caption", text <-- t(caption)), control)
 
   private lazy val cog = iconButton(_.settings)(
     aria.expanded <-- settingsOpen.signal,

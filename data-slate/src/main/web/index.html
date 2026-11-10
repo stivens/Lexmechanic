@@ -59,11 +59,6 @@
   :is(button, input, select, textarea):is(:hover, :focus-visible) { border-color: var(--brass); outline: none; }
   :is(button, input, select, textarea):disabled { opacity: .4; cursor: default; }
   option { background: var(--panel); color: var(--text); }
-  .switch { border-color: transparent; gap: 10px; }
-  .track { position: relative; width: 34px; height: 18px; border: 1px solid var(--line); border-radius: 9px; transition: background .15s, border-color .15s; }
-  .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s; }
-  .switch[aria-checked="true"] .track { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 25%, transparent); }
-  .switch[aria-checked="true"] .track::after { transform: translateX(16px); background: var(--brass); }
   button[aria-expanded="true"] { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 15%, transparent); }
   button[data-learning="true"] { border-color: var(--brass); animation: pulse 1s ease-in-out infinite; }
   .hint { color: var(--muted); font-size: 16px; margin: 0; }
@@ -80,6 +75,11 @@
   .status[data-state="ready"] .dot { background: var(--green); }
   .status[data-state="offline"] .dot, .status[data-state="failed"] .dot { background: var(--red); }
   @keyframes pulse { 50% { opacity: .25; } }
+  .pickers { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .picker { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .picker-caption, .row-label { font: 500 13px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+  .picker-caption { white-space: nowrap; }
+  .picker select { max-width: 220px; }
 
   .banners { padding: 12px 16px 0; }
   .banners:empty { display: none; }
@@ -93,9 +93,8 @@
   .entry { margin-bottom: 28px; }
   .speaker { font: 700 18px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--brass); margin-bottom: 4px; }
   .translation { margin: 0; }
-  .original { margin: 4px 0 0; color: var(--soft); font-size: 18px; font-style: italic; }
-  .shell:not(.show-original) .original { display: none; }
-  .answers { list-style: none; margin: 16px 0 0; padding: 0; }
+  ol { list-style: none; margin: 0; padding: 0; }
+  .answers { margin-top: 16px; }
   .answers li { border-left: 2px solid var(--brass); padding: 4px 0 4px 14px; margin-bottom: 10px; font-size: 21px; }
   .history-title { margin-top: 36px; margin-bottom: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
   .history .entry { font-size: 18px; opacity: .7; margin-bottom: 20px; }
@@ -106,7 +105,6 @@
   .reading > .setup { max-width: 760px; margin-top: 6vh; padding: 20px 24px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel); }
   :is(.setup, .settings-section) h2, .history-title { font: 500 14px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
   .setup h2 { margin: 0 0 8px; }
-  .setup ol { list-style: none; margin: 0; padding: 0; }
   .setup li { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
   .mark { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--red); border-radius: 50%; color: var(--red); font: 700 16px system-ui, sans-serif; }
   .setup li.done .mark { border-color: var(--brass); color: var(--brass); }
@@ -127,7 +125,7 @@
   summary:focus-visible { outline: none; }
   .row { display: grid; grid-template-columns: 220px 1fr; gap: 6px 20px; align-items: start; padding: 12px 0; }
   .row.wide { grid-template-columns: 1fr; }
-  .row-label { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding-top: 12px; font: 500 13px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+  .row-label { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding-top: 12px; }
   .row.wide .row-label { padding-top: 0; }
   .saved { font: italic 15px "EB Garamond", Georgia, serif; letter-spacing: 0; text-transform: none; color: var(--green); }
   .saved:not(:empty)::before { content: "✓ "; }
@@ -140,11 +138,21 @@
   .row-control > .value { flex: 1 1 auto; }
   .row-control > textarea ~ button { margin-left: auto; }
 
+  @media (max-width: 1000px) {
+    /* Kept for screen readers: it names the select. */
+    .picker-caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  }
   @media (max-width: 760px) {
     .wordmark, .status-label { display: none; }
     main { padding-inline: 16px; }
     .row { grid-template-columns: 1fr; }
     .row-label { padding-top: 0; }
+  }
+  @media (max-width: 560px) {
+    .topbar { flex-wrap: wrap; }
+    .pickers { order: 1; flex: 1 1 100%; }
+    .picker { flex: 1; }
+    .picker select { flex: 1; max-width: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }

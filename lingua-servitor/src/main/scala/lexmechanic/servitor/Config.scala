@@ -32,18 +32,25 @@ final case class Config(
 
   def mandate: Mandate = Mandate(game, targetLanguage, captain, activeInstructions)
 
-  def storedKey: Option[String] = apiKeys.get(provider.keyVariable)
+  def storedKey: Option[String] = apiKeys.get(provider.keyVariable).flatMap(Config.nonBlank)
 
-  def environmentKey: Option[String] = Option(System.getenv(provider.keyVariable))
+  private def environmentKey: Option[String] = Option(System.getenv(provider.keyVariable)).flatMap(Config.nonBlank)
+
+  private def resolvedKey: Option[(KeySource, String)] =
+    storedKey.map(KeySource.Stored -> _).orElse(environmentKey.map(KeySource.Environment -> _))
+
+  def apiKeySource: KeySource = resolvedKey.fold(KeySource.Missing)(_._1)
 
   def apiKey: Either[String, String] =
-    storedKey
-      .orElse(environmentKey)
+    resolvedKey
+      .map(_._2)
       .toRight(s"No $provider API key: set it in the settings, or set ${provider.keyVariable}")
 
   def voxLink: Either[String, VoxLink] = apiKey.map(VoxLink(provider, _, model.getOrElse(provider.defaultModel)))
 
 object Config:
+  def nonBlank(text: String): Option[String] = Option(text.trim).filter(_.nonEmpty)
+
   val defaultCaptureCommand: List[String] =
     if LinktimeInfo.isMac then List("screencapture", "-x", "-t", "png", "{file}")
     else List("spectacle", "--background", "--nonotify", "--fullscreen", "--output", "{file}")

@@ -16,7 +16,6 @@ object Silesian extends Messages:
   val offlineBanner = "Dymōn niy ôdpowiadŏ. Puść lexmechanic – strōna sama sie połōnczy."
   val dismiss = "Zawrzij"
 
-  val original = "Ôryginał"
   val calibrate = "Ustŏw"
   val translate = "Przełōż"
   val settings = "Ustawiynia"
@@ -26,6 +25,7 @@ object Silesian extends Messages:
   val anyGame = "Jaki bądź szpil"
   val translateInto = "Przełōż na"
   val interfaceLanguage = "Jynzyk"
+  val uiLanguage = "Jynzyk aplikacyje"
   val hotkey = "Skrōt"
   val change = "Zmiyń"
   val instructions = "Instrukcyje"
@@ -61,7 +61,7 @@ object Silesian extends Messages:
   val openCommand = "Ôtwiyrej aplikacyjõ bez"
   val openCommandHint =
     "Jedyn argumynt na wiersz; {url} je zastympowane adresym tyj strōny. Ôstŏw prōzne, coby nic niy ôtwiyrać."
-  val pressAButton = "Naciś knefel…"
+  def pressAButton(seconds: Int) = s"Naciś knefel ($seconds s)…"
   val noHotkey = "Żŏdyn"
   def hotkeyUnavailable(problem: HotkeyProblem) = problem match
     case HotkeyProblem.NoDevices =>

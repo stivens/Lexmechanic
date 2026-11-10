@@ -10,6 +10,7 @@ import lexmechanic.servitor.runtime.{Log, ServoSkull, failureOf, reason}
 import lexmechanic.servitor.translation.Xenolinguist
 
 import java.nio.file.Files
+import scala.concurrent.duration.*
 import scala.util.{Try, Using}
 
 final class Servitor(initial: Config):
@@ -23,8 +24,10 @@ final class Servitor(initial: Config):
   private var nextEntryId = 1
   private var busy = false
   private var error = Option.empty[String]
-  private var learning = false
+  private var learningUntil = Option.empty[Deadline]
   private var hotkeyUnavailable = Option.empty[HotkeyProblem]
+
+  private def learning: Boolean = learningUntil.exists(_.hasTimeLeft())
 
   private def state: State = synchronized {
     State(
@@ -40,7 +43,7 @@ final class Servitor(initial: Config):
       provider = config.provider,
       model = config.model,
       apiKey = config.storedKey,
-      apiKeyFromEnvironment = config.storedKey.isEmpty && config.environmentKey.isDefined,
+      apiKeySource = config.apiKeySource,
       captain = config.captain,
       port = config.port,
       restartRequired = config.port != initial.port,
@@ -53,15 +56,15 @@ final class Servitor(initial: Config):
 
   def hotkeyProblem(problem: Option[HotkeyProblem]): Unit = synchronized {
     hotkeyUnavailable = problem
-    if problem.isDefined then learning = false
+    if problem.isDefined then learningUntil = None
   }
 
   def onKey(code: Int): Unit =
     val isHotkey = synchronized {
       if learning then
-        if code == EvdevKeys.KeyEsc then learning = false
+        if code == EvdevKeys.KeyEsc then learningUntil = None
         else if EvdevKeys.bindable(code) then
-          learning = false
+          learningUntil = None
           error = failureOf(updateConfig(_.copy(hotkey = Some(code))))
         false
       else config.hotkey.contains(code)
@@ -100,7 +103,7 @@ final class Servitor(initial: Config):
     }
 
   private def startLearning(): Boolean = synchronized {
-    learning = hotkeyUnavailable.isEmpty
+    learningUntil = Option.when(hotkeyUnavailable.isEmpty)(HotkeyState.learnSeconds.seconds.fromNow)
     learning
   }
 
@@ -123,8 +126,6 @@ final class Servitor(initial: Config):
     val failure = Try(action).fold(e => Some(500 -> e.reason), identity)
     synchronized { error = failure.map(_._2) }
     currentState(failure.fold(200)(_._1))
-
-  private def nonBlank(text: String): Option[String] = Option(text.trim).filter(_.nonEmpty)
 
   private def endpoint(request: Request): Response = (request.method, request.path) match
     case ("GET", "/state")                                       => currentState()
@@ -158,8 +159,8 @@ final class Servitor(initial: Config):
               val keptModel = if provider == c.provider then c.model else None
               c.copy(
                 provider = provider,
-                model = settings.model.map(nonBlank).getOrElse(keptModel),
-                apiKeys = settings.apiKey.map(nonBlank).fold(c.apiKeys) {
+                model = settings.model.map(Config.nonBlank).getOrElse(keptModel),
+                apiKeys = settings.apiKey.map(Config.nonBlank).fold(c.apiKeys) {
                   case Some(key) => c.apiKeys.updated(provider.keyVariable, key)
                   case None      => c.apiKeys - provider.keyVariable
                 },
@@ -186,7 +187,7 @@ final class Servitor(initial: Config):
       }
     case ("POST", "/hotkey/learn")  => currentState(if startLearning() then 200 else 409)
     case ("POST", "/hotkey/cancel") =>
-      synchronized { learning = false }
+      synchronized { learningUntil = None }
       currentState()
     case ("GET", path) if Resources.web.contains(path) => Resources.web(path)
     case _                                             => Response.text(404, "Not found")

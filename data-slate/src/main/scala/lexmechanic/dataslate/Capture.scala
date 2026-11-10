@@ -26,7 +26,7 @@ object Capture:
 
   def hotkeyText: Signal[String] = t(hotkey) { (m, current) =>
     current.fold("…") { h =>
-      if h.learning then m.pressAButton
+      if h.learning then m.pressAButton(HotkeyState.learnSeconds)
       else h.unavailable.fold(h.button.fold(m.noHotkey)(m.keyName))(m.hotkeyUnavailable)
     }
   }

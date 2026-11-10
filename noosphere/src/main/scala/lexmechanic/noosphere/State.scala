@@ -15,7 +15,7 @@ final case class State(
     provider: Heretek,
     model: Option[String],
     apiKey: Option[String],
-    apiKeyFromEnvironment: Boolean,
+    apiKeySource: KeySource,
     captain: Gender,
     port: Int,
     restartRequired: Boolean,

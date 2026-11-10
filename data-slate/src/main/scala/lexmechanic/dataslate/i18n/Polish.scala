@@ -15,7 +15,6 @@ object Polish extends Messages:
   val offlineBanner = "Demon nie odpowiada. Uruchom lexmechanic – strona połączy się sama."
   val dismiss = "Zamknij"
 
-  val original = "Oryginał"
   val calibrate = "Kalibruj"
   val translate = "Tłumacz"
   val settings = "Ustawienia"
@@ -25,6 +24,7 @@ object Polish extends Messages:
   val anyGame = "Dowolna gra"
   val translateInto = "Tłumacz na"
   val interfaceLanguage = "Język"
+  val uiLanguage = "Język interfejsu"
   val hotkey = "Skrót"
   val change = "Zmień"
   val instructions = "Instrukcje"
@@ -60,7 +60,7 @@ object Polish extends Messages:
   val openCommand = "Otwieraj interfejs przez"
   val openCommandHint =
     "Jeden argument w wierszu; {url} jest zastępowane adresem tej strony. Zostaw puste, aby niczego nie otwierać."
-  val pressAButton = "Naciśnij przycisk…"
+  def pressAButton(seconds: Int) = s"Naciśnij przycisk ($seconds s)…"
   val noHotkey = "Brak"
   def hotkeyUnavailable(problem: HotkeyProblem) = problem match
     case HotkeyProblem.NoDevices =>
