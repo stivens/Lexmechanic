@@ -1,6 +1,6 @@
 package lexmechanic.dataslate.i18n
 
-import lexmechanic.noosphere.{Gender, HotkeyProblem}
+import lexmechanic.noosphere.{Gender, HotkeyProblem, Region}
 
 object Polish extends Messages:
   val name = "Polski"
@@ -12,29 +12,43 @@ object Polish extends Messages:
   val statusFailed = "Błąd"
   val statusReady = "Gotowy"
 
-  val original = "Oryginał"
-  val clear = "Wyczyść"
+  val offlineBanner = "Demon nie odpowiada. Uruchom lexmechanic – strona połączy się sama."
+  val dismiss = "Zamknij"
+
   val calibrate = "Kalibruj"
   val translate = "Tłumacz"
+  val settings = "Ustawienia"
+  val back = "Wróć"
 
   val game = "Gra"
   val anyGame = "Dowolna gra"
   val translateInto = "Tłumacz na"
-  val interfaceLanguage = "Interfejs"
+  val interfaceLanguage = "Język"
+  val uiLanguage = "Język interfejsu"
   val hotkey = "Skrót"
-  val hotkeyLearnHint = "Kliknij, a potem naciśnij przycisk myszy lub klawisz, którego chcesz używać"
-  val hotkeyCancelHint = "Kliknij, aby anulować"
+  val change = "Zmień"
   val instructions = "Instrukcje"
   val instructionsHint =
-    "Dodatkowe wskazówki dla Plugawej Inteligencji, zapisywane po wyjściu z pola. Gra, język docelowy i format odpowiedzi są dodawane zawsze."
+    "Dodatkowe wskazówki dla Plugawej Inteligencji. Gra, język docelowy i format odpowiedzi są dodawane zawsze."
   val restoreDefault = "Przywróć domyślne"
+  val saved = "Zapisano"
 
-  val advanced = "Ustawienia zaawansowane"
-  val advancedHint = "Każde pole jest zapisywane po wyjściu z niego."
+  val sectionTranslation = "Tłumaczenie"
+  val sectionCapture = "Przechwytywanie"
+  val sectionAi = "AI"
+  val sectionInterface = "Interfejs"
+  val sectionSystem = "System"
+
+  val region = "Obszar dialogu"
+  val regionNotSet = "Nie ustawiono – wysyłany jest cały ekran"
+  def regionSet(region: Region) = s"${region.width}×${region.height} px w punkcie ${region.x}, ${region.y}"
+
   val provider = "Dostawca AI"
   val model = "Model"
   val apiKey = "Klucz API"
   def apiKeyFallback(variable: String) = s"lub ustaw $variable"
+  def apiKeyFromEnvironment(variable: String) = s"Używany jest $variable ze zmiennych środowiskowych"
+  val noApiKey = "Brak klucza – tłumaczenia się nie powiodą"
   val captain = "Postać gracza"
   def gender(gender: Gender) = gender match
     case Gender.Male   => "Mężczyzna"
@@ -46,7 +60,7 @@ object Polish extends Messages:
   val openCommand = "Otwieraj interfejs przez"
   val openCommandHint =
     "Jeden argument w wierszu; {url} jest zastępowane adresem tej strony. Zostaw puste, aby niczego nie otwierać."
-  val pressAButton = "Naciśnij przycisk…"
+  def pressAButton(seconds: Int) = s"Naciśnij przycisk ($seconds s)…"
   val noHotkey = "Brak"
   def hotkeyUnavailable(problem: HotkeyProblem) = problem match
     case HotkeyProblem.NoDevices =>
@@ -56,10 +70,13 @@ object Polish extends Messages:
     case HotkeyProblem.NoInputMonitoring =>
       "Skrót niedostępny: zezwól Lexmechanikowi (lub terminalowi, w którym działa) na Monitorowanie wprowadzania w Ustawieniach systemowych > Prywatność i ochrona, a potem uruchom go ponownie."
 
-  val noRegion =
-    "Nie skalibrowano jeszcze obszaru – wysyłany jest cały ekran. Użyj przycisku Kalibruj, aby zaznaczyć okno dialogowe."
-  val emptyHistory = "Naciśnij skrót, gdy na ekranie jest dialog."
+  val setupTitle = "Przygotowanie"
+  val setupKey = "Klucz dostawcy AI"
+  val openSettings = "Otwórz ustawienia"
+  def pressHotkey(key: String) = s"Gdy na ekranie jest dialog, naciśnij: $key."
+
   val earlier = "Wcześniej"
+  val clearHistory = "Wyczyść historię"
 
   val calibrationInstructions = "Zaznacz okno dialogowe, przeciągając po nim, a potem zapisz."
   val cancel = "Anuluj"

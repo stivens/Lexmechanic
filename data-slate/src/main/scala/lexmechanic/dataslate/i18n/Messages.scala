@@ -19,31 +19,45 @@ trait Messages:
   val statusFailed: String
   val statusReady: String
 
-  val original: String
-  val clear: String
-  val calibrate: String
+  val offlineBanner: String
+  val dismiss: String
+
   val translate: String
+  val settings: String
+  val back: String
 
   val game: String
   val anyGame: String
   val translateInto: String
   val interfaceLanguage: String
+  val uiLanguage: String
   val hotkey: String
-  val hotkeyLearnHint: String
-  val hotkeyCancelHint: String
-  val pressAButton: String
+  val change: String
+  def pressAButton(seconds: Int): String
   val noHotkey: String
   def hotkeyUnavailable(problem: HotkeyProblem): String
   val instructions: String
   val instructionsHint: String
   val restoreDefault: String
+  val saved: String
 
-  val advanced: String
-  val advancedHint: String
+  val sectionTranslation: String
+  val sectionCapture: String
+  val sectionAi: String
+  val sectionInterface: String
+  val sectionSystem: String
+
+  val region: String
+  val regionNotSet: String
+  def regionSet(region: Region): String
+  val calibrate: String
+
   val provider: String
   val model: String
   val apiKey: String
   def apiKeyFallback(variable: String): String
+  def apiKeyFromEnvironment(variable: String): String
+  val noApiKey: String
   val captain: String
   def gender(gender: Gender): String
   val port: String
@@ -53,9 +67,13 @@ trait Messages:
   val openCommand: String
   val openCommandHint: String
 
-  val noRegion: String
-  val emptyHistory: String
+  val setupTitle: String
+  val setupKey: String
+  val openSettings: String
+  def pressHotkey(key: String): String
+
   val earlier: String
+  val clearHistory: String
 
   val calibrationInstructions: String
   val cancel: String

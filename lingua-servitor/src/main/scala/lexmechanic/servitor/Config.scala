@@ -35,16 +35,25 @@ final case class Config(
 
   def mandate: Mandate = Mandate(game, targetLanguage, captain, activeInstructions)
 
-  def storedKey: Option[String] = apiKeys.get(provider.keyVariable)
+  def storedKey: Option[String] = apiKeys.get(provider.keyVariable).flatMap(Config.nonBlank)
+
+  private def environmentKey: Option[String] = Option(System.getenv(provider.keyVariable)).flatMap(Config.nonBlank)
+
+  private def resolvedKey: Option[(KeySource, String)] =
+    storedKey.map(KeySource.Stored -> _).orElse(environmentKey.map(KeySource.Environment -> _))
+
+  def apiKeySource: KeySource = resolvedKey.fold(KeySource.Missing)(_._1)
 
   def apiKey: Either[String, String] =
-    storedKey
-      .orElse(sys.env.get(provider.keyVariable))
-      .toRight(s"No $provider API key: set it in the advanced settings, or set ${provider.keyVariable}")
+    resolvedKey
+      .map(_._2)
+      .toRight(s"No $provider API key: set it in the settings, or set ${provider.keyVariable}")
 
   def voxLink: Either[String, VoxLink] = apiKey.map(VoxLink(provider, _, model.getOrElse(provider.defaultModel)))
 
 object Config:
+  def nonBlank(text: String): Option[String] = Option(text.trim).filter(_.nonEmpty)
+
   val defaultOpenCommand: List[String] = List(if LinktimeInfo.isMac then "open" else "xdg-open", "{url}")
 
   private def xdgDir(variable: String, fallback: String): Path =

@@ -22,7 +22,9 @@ object Calibration:
     selection.set(None)
     screenshot.set(Some(s"/screenshot?${js.Date.now()}"))
 
-  private def close(): Unit = screenshot.set(None)
+  def isOpen: Boolean = screenshot.now().isDefined
+
+  def close(): Unit = screenshot.set(None)
 
   private def point(e: dom.PointerEvent): Option[(Double, Double)] = image.map { img =>
     val rect = img.getBoundingClientRect()
@@ -43,13 +45,14 @@ object Calibration:
 
   private def percent(edge: Box => Double) = selection.signal.map(_.fold("0")(b => s"${edge(b) * 100}%"))
 
-  def overlay(saved: Signal[Option[Region]]) = div(
+  def overlay = div(
     idAttr := "calibration",
     cls("open") <-- screenshot.signal.map(_.isDefined),
     headerTag(
       div(cls := "instructions", text <-- t(_.calibrationInstructions)),
       button(text <-- t(_.cancel), onClick --> { _ => close() }),
       button(
+        cls := "primary",
         text <-- t(_.saveRegion),
         disabled <-- selection.signal.map(!_.exists(b => b.width > 0.005 && b.height > 0.005)),
         onClick --> { _ => save() }
@@ -64,7 +67,7 @@ object Calibration:
           draggable := false,
           src <-- screenshot.signal.map(_.getOrElse("")),
           onMountCallback(ctx => image = Some(ctx.thisNode.ref)),
-          onLoad(_.sample(saved)) --> { region =>
+          onLoad(_.sample(Capture.region)) --> { region =>
             for r <- region; img <- image if img.naturalWidth > 0 do
               val (w, h) = (img.naturalWidth.toDouble, img.naturalHeight.toDouble)
               selection.set(Some(Box(r.x / w, r.y / h, r.width / w, r.height / h)))

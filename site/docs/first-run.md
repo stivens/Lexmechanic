@@ -11,14 +11,17 @@ sudo usermod -aG input "$USER"
 ~/.local/bin/lexmechanic
 ```
 
-The daemon starts in the background and opens its UI in your browser. Then:
+The daemon starts in the background and opens its UI in your browser. Whenever there are no translations to show,
+which is after each start of the daemon and after **Clear history**, the UI shows a setup checklist:
 
-1. Open the advanced settings with the cog icon, choose an [AI provider]({% link docs/ai-providers.md %})
-   and enter its API key.
-2. Choose the language to translate into.
-3. With a dialogue on screen, press **Calibrate**, drag over the dialogue window and save the region. Until you do,
-   the whole screen is sent.
-4. Press the hotkey during a conversation. The default is the forward mouse button (Mouse 5); click **Hotkey** in the
-   UI and press another mouse button or key to change it.
+1. **AI provider key:** press **Open settings**, choose an [AI provider]({% link docs/ai-providers.md %}) and enter
+   its API key.
+2. **Dialogue region:** with a dialogue on screen, press **Calibrate**, drag over the dialogue window and save the
+   region. Until you do, the whole screen is sent.
+3. **Hotkey:** the default is the forward mouse button (Mouse 5). To use another, press **Change**, then the mouse
+   button or key you want within 5 seconds.
+
+Check the language to translate into in the top bar, next to the interface language. Then press the hotkey, or
+**Translate**, during a conversation. Everything in the checklist can be changed later in the settings (the cog icon).
 
 To start it from the app menu instead of a terminal, add a [desktop shortcut]({% link docs/desktop-shortcut.md %}).

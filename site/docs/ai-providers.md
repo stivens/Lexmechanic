@@ -4,7 +4,7 @@ title: AI providers
 ---
 
 Lexmechanic sends the dialogue image to an AI model of your choice, using your own API key. Pick the provider in the
-advanced settings (the cog icon) and paste its key there.
+settings (the cog icon), under **AI**, and paste its key there.
 
 | Provider | Default model | Key variable | Cost |
 |---|---|---|---|

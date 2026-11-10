@@ -125,7 +125,7 @@ object Language:
     Language("la", "Latin", "Latina")
   )
 
-  val byCode: Map[String, Language] = all.map(l => l.code -> l).toMap
+  private val byCode: Map[String, Language] = all.map(l => l.code -> l).toMap
 
   given Codec[Language] = lookupCodec(all, "language")(_.code)
 

@@ -1,6 +1,7 @@
 package lexmechanic.noosphere
 
 object EvdevKeys:
+  val KeyEsc = 1
   val BtnLeft = 272
   private val BtnRight = 273
   val BtnMiddle = 274
