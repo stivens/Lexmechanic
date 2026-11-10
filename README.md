@@ -71,7 +71,7 @@ setup and a desktop shortcut.
 ### Building from source
 
 To build it yourself, see [Build from source](https://stivens.github.io/Lexmechanic/docs/build-from-source/). On macOS,
-that is the only way for now; see also [macOS setup](https://stivens.github.io/Lexmechanic/docs/macos-setup/).
+see [macOS setup](https://stivens.github.io/Lexmechanic/docs/macos-setup/).
 
 ## License
 

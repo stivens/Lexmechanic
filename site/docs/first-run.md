@@ -3,11 +3,16 @@ nav_order: 3
 title: First run
 ---
 
+On Linux, first let the daemon read the hotkey from `/dev/input`. It takes effect after you log in again.
+
 ```bash
-# Linux only (see macOS setup for a Mac): lets the daemon read the hotkey from /dev/input; takes effect after you log in again.
 # On a Steam Deck, set a password with `passwd` first.
 sudo usermod -aG input "$USER"
+```
 
+Then start it:
+
+```bash
 ~/.local/bin/lexmechanic
 ```
 
@@ -24,4 +29,5 @@ which is after each start of the daemon and after **Clear history**, the UI show
 Check the language to translate into in the top bar, next to the interface language. Then press the hotkey, or
 **Translate**, during a conversation. Everything in the checklist can be changed later in the settings (the cog icon).
 
-To start it from the app menu instead of a terminal, add a [desktop shortcut]({% link docs/desktop-shortcut.md %}).
+On Linux, to start it from the app menu instead of a terminal, add a
+[desktop shortcut]({% link docs/desktop-shortcut.md %}).

@@ -57,7 +57,7 @@ private[desktop] object MacKeys:
     0x31 -> 57, // Space
     0x32 -> 41, // `
     0x33 -> 14, // Delete (backspace)
-    0x35 -> 1, // Escape
+    0x35 -> EvdevKeys.KeyEsc,
     0x40 -> EvdevKeys.functionKey(17),
     0x41 -> 83, // Keypad .
     0x43 -> 55, // Keypad *

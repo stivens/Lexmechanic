@@ -17,6 +17,9 @@ mkdir -p ~/.local/bin && install -m755 target/lexmechanic ~/.local/bin/lexmechan
 - **Hotkey:** the daemon listens through a Quartz event tap, which needs the Input Monitoring permission. On the first
   start macOS asks for it; allow it in System Settings > Privacy & Security > Input Monitoring, then restart. The
   permission goes to the app that launched Lexmechanic, which is your terminal when you start it from one.
-- **Screenshots:** `screencapture` needs the Screen Recording permission, granted the same way. Without it, screenshots
-  fail or miss the game window. It captures the main display; to use another one, set the screenshot command to
-  `screencapture`, `-x`, `-t`, `png`, `-D`, `2`, `{file}` (one argument per line).
+- **Screenshots:** `screencapture` needs the Screen Recording permission; macOS asks for it on the first screenshot,
+  and it is granted the same way. Without it, screenshots fail or miss the game window. It captures the main display;
+  to use another one, set the screenshot command (settings, under **System**) to `screencapture`, `-x`, `-t`, `png`,
+  `-D`, `2`, `{file}` (one argument per line).
+
+Then continue with the [first run]({% link docs/first-run.md %}).

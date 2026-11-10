@@ -3,6 +3,8 @@ nav_order: 7
 title: Build from source
 ---
 
+On macOS, see [macOS setup]({% link docs/macos-setup.md %}) instead.
+
 Build inside a [distrobox](https://distrobox.it) container: it works the same on any distro, including immutable ones
 like SteamOS, and keeps the build toolchain off the host.
 

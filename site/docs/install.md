@@ -3,6 +3,8 @@ nav_order: 2
 title: Install
 ---
 
+On macOS, see [macOS setup]({% link docs/macos-setup.md %}) instead.
+
 Download the prebuilt x86_64 binary from the latest release. It needs glibc 2.35 or newer (Ubuntu 22.04, Debian 12,
 Fedora 36, SteamOS 3 and later) and libcurl, which nearly every desktop distro ships.
 
