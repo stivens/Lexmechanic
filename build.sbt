@@ -34,8 +34,8 @@ lazy val linguaServitor = project
   .settings(
     name := "lingua-servitor",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.ai" %% "claude" % "0.12.0",
-      "com.softwaremill.sttp.ai" %% "openai" % "0.12.0"
+      "com.softwaremill.sttp.ai" %% "claude" % "0.12.1",
+      "com.softwaremill.sttp.ai" %% "openai" % "0.12.1"
     ),
     Compile / resourceGenerators += Def.task {
       val web = (Compile / resourceManaged).value / "web"
